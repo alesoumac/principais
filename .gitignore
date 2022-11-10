@@ -1,1 +1,5 @@
 *.weights
+*.pth
+haar*
+*.prototxt
+*.caffemodel
