@@ -1,0 +1,40 @@
+===============================================================================
+INSTALAÇÃO OUTUBRO/2020
+===============================================================================
+INSTALAÇÃO NO UBUNTU E DERIVADOS
+
+echo “Instalei o Anaconda e criei um env ‘darknet_server’ com Python versão 3.7.6”
+
+sudo apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
+
+echo “Tentei instalar cuda, mas…”
+
+sudo apt install python3-opencv build-essential cmake python3-dev python3-numpy net-tools tesseract-ocr tesseract-ocr-por tesseract-ocr-eng
+echo "sudo apt install darknet"
+
+pip install opencv-python cryptography responder pillow scipy imutils pytesseract pyspellchecker pyjwt scikit-image cdifflib
+
+echo “Copiei os arquivos fontes do darknet_server e do vvcd para as minhas pastas”
+echo "Na pasta do darknet_server, é necessário criar duas subpastas: 'audit' e 'log'"
+
+echo "Copiei tmb o executável api1 e seu arquivo de inicialização api1.ini para uma pasta qualquer de programas"
+
+
+
+===============================================================================
+INSTALAÇÃO NO MANJARO (ARCHLINUX)
+echo “Instalei o Anaconda e criei um env ‘darknet_server’ com Python versão 3.7.6”
+
+sudo pacman -Syu opencv tesseract tesseract-data-por tesseract-data-eng net-tools yay
+
+pip install opencv-python cryptography responder pillow scipy imutils pytesseract pyspellchecker pyjwt scikit-image cdifflib
+
+echo "No aplicativo «Atualização de Programas», cliquei no menu dos 3 pontinhos (ou tracinhos), Preferências, na aba AUR, e escolhi «Habilitar Suporte AUR»"
+
+echo "Ainda no aplicativo «Atualização de Programas», procurei o pacote darknet-alexeyab-git e instalei o mesmo (compilação). Quando perguntou, escolhi CUDA 450" 
+
+echo “Copiei os arquivos fontes do darknet_server e do vvcd para as minhas pastas”
+echo "Na pasta do darknet_server, é necessário criar duas subpastas: 'audit' e 'log'"
+
+echo "Copiei tmb o executável api1 e seu arquivo de inicialização api1.ini para uma pasta qualquer de programas"
+
