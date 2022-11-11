@@ -731,17 +731,17 @@ def find_possible_lines(img):
 #     pontos_ref = {
 #         "width": 800,
 #         "height": 1074,
-#         "foto_CNH": (273, 330),
-#         "nome_CNH": (432, 173),
-#         "identidade_CNH": (550, 219),
-#         "cpf_CNH": (487, 268),
-#         "nascimento_CNH": (638, 268),
-#         "filiacao_CNH": (550, 352),
-#         "registro_CNH": (270, 488),
-#         "validade_CNH": (458, 488),
-#         "pri_habilitacao_CNH": (619, 488),
-#         "local_emissao_CNH": (356, 836),
-#         "data_emissao_CNH": (628, 836)
+#         "foto_cnh": (273, 330),
+#         "nome_cnh": (432, 173),
+#         "identidade_cnh": (550, 219),
+#         "cpf_cnh": (487, 268),
+#         "nascimento_cnh": (638, 268),
+#         "filiacao_cnh": (550, 352),
+#         "registro_cnh": (270, 488),
+#         "validade_cnh": (458, 488),
+#         "pri_habilitacao_cnh": (619, 488),
+#         "local_emissao_cnh": (356, 836),
+#         "data_emissao_cnh": (628, 836)
 #     }
 
 #     height, width = pontos_ref["height"], pontos_ref["width"]

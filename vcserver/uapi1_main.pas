@@ -977,34 +977,37 @@ begin
 
     if (Items[ItemIndex] = 'CNH') or (Items[ItemIndex] = 'CNH Frente')
     then begin
-      grdValores.RowCount := 9;
-      grdValores.Cells[0,1] := 'nome_CNH';
-      grdValores.Cells[0,2] := 'identidade_CNH';
-      grdValores.Cells[0,3] := 'cpf_CNH';
-      grdValores.Cells[0,4] := 'nascimento_CNH';
-      grdValores.Cells[0,5] := 'filiacao_CNH';
-      grdValores.Cells[0,6] := 'registro_CNH';
-      grdValores.Cells[0,7] := 'validade_CNH';
-      grdValores.Cells[0,8] := 'pri_habilitacao_CNH';
+      grdValores.RowCount := 10;
+      grdValores.Cells[0,1] := 'nome_cnh';
+      grdValores.Cells[0,2] := 'identidade_cnh';
+      grdValores.Cells[0,3] := 'cpf_cnh';
+      grdValores.Cells[0,4] := 'nascimento_cnh';
+      grdValores.Cells[0,5] := 'filiacao_cnh';
+      grdValores.Cells[0,6] := 'categoria_cnh';
+      grdValores.Cells[0,7] := 'registro_cnh';
+      grdValores.Cells[0,8] := 'validade_cnh';
+      grdValores.Cells[0,9] := 'pri_habilitacao_cnh';
 
-      if Items[ItemIndex] = 'CNH'
+      if Items[ItemIndex] = 'cnh'
       then begin
-        grdValores.RowCount := 11;
-        grdValores.Cells[0,9] := 'local_emissao_CNH';
-        grdValores.Cells[0,10] := 'data_emissao_CNH';
+        grdValores.RowCount := 13;
+        grdValores.Cells[0,10] := 'observacao_cnh';
+        grdValores.Cells[0,11] := 'local_emissao_cnh';
+        grdValores.Cells[0,12] := 'data_emissao_cnh';
       end;
     end;
     if Items[ItemIndex] = 'RG'
     then begin
-      grdValores.RowCount := 9;
-      grdValores.Cells[0,1] := 'nome_RG';
-      grdValores.Cells[0,2] := 'registro_geral_RG';
-      grdValores.Cells[0,3] := 'data_expedicao_RG';
-      grdValores.Cells[0,4] := 'filiacao_RG';
-      grdValores.Cells[0,5] := 'naturalidade_RG';
-      grdValores.Cells[0,6] := 'nascimento_RG';
-      grdValores.Cells[0,7] := 'doc_origem_RG';
-      grdValores.Cells[0,8] := 'CPF_RG';
+      grdValores.RowCount := 10;
+      grdValores.Cells[0,1] := 'nome_rg';
+      grdValores.Cells[0,2] := 'registro_geral_rg';
+      grdValores.Cells[0,3] := 'data_expedicao_rg';
+      grdValores.Cells[0,4] := 'filiacao_rg';
+      grdValores.Cells[0,5] := 'naturalidade_rg';
+      grdValores.Cells[0,6] := 'nascimento_rg';
+      grdValores.Cells[0,7] := 'doc_origem_rg';
+      grdValores.Cells[0,8] := 'cpf_rg';
+      grdValores.Cells[0,9] := 'cabecalho_rg';
     end;
   end;
 end;
@@ -1022,35 +1025,37 @@ end;
 
 procedure TfrmMain.lstArquivosChange(Sender: TObject);
 const
-  NUM_CHAVES = 27;
+  NUM_CHAVES = 29;
   chaves : array [1..NUM_CHAVES] of string = (
-  'foto_CNH',
-  'nome_CNH',
-  'identidade_CNH',
-  'cpf_CNH',
-  'nascimento_CNH',
-  'filiacao_CNH',
-  'registro_CNH',
-  'validade_CNH',
-  'pri_habilitacao_CNH',
-  'local_emissao_CNH',
-  'data_emissao_CNH',
-  'CNH',
-  'nome_RG',
-  'foto_RG',
-  'assinatura_RG',
-  'digital_RG',
-  'registro_geral_RG',
-  'registro_geral',
-  'data_expedicao_RG',
-  'filiacao_RG',
-  'naturalidade_RG',
-  'nascimento_RG',
-  'doc_origem_RG',
-  'CPF_RG',
-  'RG_verso',
-  'RG_frente',
-  'CNH_frente'
+  'foto_cnh',
+  'nome_cnh',
+  'identidade_cnh',
+  'cpf_cnh',
+  'nascimento_cnh',
+  'filiacao_cnh',
+  'registro_cnh',
+  'validade_cnh',
+  'pri_habilitacao_cnh',
+  'local_emissao_cnh',
+  'data_emissao_cnh',
+  'cnh',
+  'nome_rg',
+  'foto_rg',
+  'assinatura_rg',
+  'digital_rg',
+  'registro_geral_rg',
+  'data_expedicao_rg',
+  'filiacao_rg',
+  'naturalidade_rg',
+  'nascimento_rg',
+  'doc_origem_rg',
+  'cpf_rg',
+  'rg_verso',
+  'rg_frente',
+  'cnh_frente',
+  'categoria_cnh',
+  'observacao_cnh',
+  'cabecalho_rg'
   );
 var
   IsCNH, IsRG, TemCampoCNHVerso : Boolean;
@@ -1139,16 +1144,16 @@ var
   json : TJSONData;
 begin
   case grpDoc.ItemIndex of
-  1: TipoDoc := 'CNH';
-  2: TipoDoc := 'CNH_Frente';
-  3: if FindGridRow('RG_frente') >= 0 then TipoDoc := 'RG_frente'
-     else if FindGridRow('RG_verso') >= 0 then TipoDoc := 'RG_verso'
-     else TipoDoc := 'RG';
-  else TipoDoc := 'Outros';
+  1: TipoDoc := 'cnh';
+  2: TipoDoc := 'cnh_frente';
+  3: if FindGridRow('rg_frente') >= 0 then TipoDoc := 'rg_frente'
+     else if FindGridRow('rg_verso') >= 0 then TipoDoc := 'rg_verso'
+     else TipoDoc := 'rg';
+  else TipoDoc := 'outros';
   end;
-  if TipoDoc = 'Outros'
+  if TipoDoc = 'outros'
   then begin
-    Result := '{"tipo_doc": "Outros"}';
+    Result := '{"tipo_doc": "outros"}';
     Exit;
   end;
   J := '{"tipo_doc": "' + TipoDoc + '"';
@@ -1318,4 +1323,3 @@ begin
 end;
 
 end.
-

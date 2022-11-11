@@ -223,11 +223,11 @@ class DarknetServer:
                     if w > 0 and h > 0:
                         ocr_text,altura_ocr = cnhp.detectar_campo_cnh(obj_name, crop_np_rgb)
                         spell_ocr = cnhp.spell_verify(ocr_text)
-                        if obj_name in ["CNH","CNH_frente"] \
+                        if obj_name in ["cnh","cnh_frente"] \
                         or obj_name.lower().startswith("rg") \
                         or obj_name.lower().endswith("rg"):
                             pass
-                        elif obj_name == "filiacao_CNH":
+                        elif obj_name == "filiacao_cnh":
                             altura_filiacao = altura_ocr
                         else:
                             if altura_ocr > 0: alturas += [altura_ocr]

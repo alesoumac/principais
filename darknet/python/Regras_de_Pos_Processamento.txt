@@ -1,16 +1,16 @@
-Para o campo nome_CNH:
+Para o campo nome_cnh:
   1) Fazer SpellChecker
   2) Se existir a palavra 'NOME', retirá-la
   3) Retirar todas as palavras com 1 ou 2 caracteres do inicio
 
-Para o campo identidade_CNH:
+Para o campo identidade_cnh:
   1) Fazer SpellChecker 
   2) Verificar se existe pelo menos uma palavra que contenha números
      - caso exista, retirar todas as palavras anteriores a essa que contem números
      - caso não exista, retirar todas as primeiras palavras com 1 ou 2 caracteres (manter pelo menos duas ao final)
   3) Se existir 1 ou mais palavras da lista ['DOC','IDENTIDADE','ORG','EMISSOR','UF'], retirá-las
 
-Para o campo cpf_CNH:
+Para o campo cpf_cnh:
   1) Substituir:
      - 'B' (letra) por '8' (oito) 
      - 'O' (letra) por '0' (zero)
@@ -23,7 +23,7 @@ Para o campo cpf_CNH:
                  Dígitos semelhantes: ['1','7']
                  e fazer verificação, fazendo apenas uma substituição com esses dígitos semelhantes
 
-Para os campos nascimento_CNH, validade_CNH, pri_habilitacao_CNH e data_emissao_CNH:
+Para os campos nascimento_cnh, validade_cnh, pri_habilitacao_cnh e data_emissao_cnh:
   1) Substituir:
      - 'B' (letra) por '8' (oito) 
      - 'O' (letra) por '0' (zero)
@@ -32,12 +32,12 @@ Para os campos nascimento_CNH, validade_CNH, pri_habilitacao_CNH e data_emissao_
   2) Retirar qualquer caracter que não seja numérico ou '/' ou '-' ou '.'
   3) Verificar se é uma data válida
 
-Para o campo filiacao_CNH:
+Para o campo filiacao_cnh:
   1) Fazer SpellChecker
   2) Se existir a palavra 'FILIACAO' ou 'FILIAÇÃO', retirá-la
   3) Retirar todas as palavras com 1 ou 2 caracteres do inicio
 
-Para o campo registro_CNH:
+Para o campo registro_cnh:
   1) Substituir:
      - 'B' (letra) por '8' (oito) 
      - 'O' (letra) por '0' (zero)
@@ -45,7 +45,7 @@ Para o campo registro_CNH:
      - 'A' (letra) por '4' (quatro)
   2) Retirar qualquer caracter que não seja numérico
 
-Para o campo local_emissao_CNH:
+Para o campo local_emissao_cnh:
   1) Fazer SpellChecker
   2) Se existir a palavra 'LOCAL', retirá-la
   3) Retirar todas as palavras com 1 ou 2 caracteres do inicio

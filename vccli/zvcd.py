@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 import platform
 
 import cv2
+import difflib
 import requests
 from PIL import Image
 import numpy as np
@@ -27,6 +28,8 @@ CURRENT_OS = platform.system().lower()
 #   H - Homologação
 AMBIENTE = "D"
 
+TAG_FILE_COM_PREFIXO_PERCENTUAL = False
+
 USE_LOCAL_SERVER = False
 PERFORM_SKEW_CORRECTION = False
 SHOW_RESULT_JSON = False
@@ -38,12 +41,14 @@ ASK_ROTATE = False
 ASK_DIVIDE = False
 CROP_HEIGHT = -1
 LAP_TIME = None
+OCR_TEST_TYPE = 3
+SHOW_EXTRACTED_VALUES = False
 
 CONTADOR_ARQUIVOS = 0
 OUTFILE = None
 
-FFPP = 3
-OFPP = 3
+FFPP = '3'
+OFPP = '3'
 USE_RESIZE = False
 LARG_MAXIMA = 800
 
@@ -56,14 +61,24 @@ HEADER_EXPIRATION = None
 CPF_OK = 0
 CPF_NOK = 0
 
-CAMPOS_ACURACIA = {"nome_CNH":"Nome CNH (%)", "identidade_CNH": "Identidade CNH (%)", "cpf_CNH": "CPF CNH (%)", "nascimento_CNH": "Data Nasc. CNH (%)", \
-    "filiacao_CNH": "Filiação CNH (%)", "registro_CNH": "Nº Registro CNH (%)", "validade_CNH": "Data Validade CNH (%)", "pri_habilitacao_CNH": "Data 1ª Habil. CNH (%)", \
-    "local_emissao_CNH": "Local Emissão CNH (%)", "data_emissao_CNH": "Data Emissão CNH (%)", \
-    "nome_RG": "Nome RG (%)", "registro_geral_RG": "Nº Reg. Geral RG (%)", "data_expedicao_RG": "Data Exped. RG (%)", \
-    "filiacao_RG": "Filiação RG (%)", "naturalidade_RG": "Naturalidade RG (%)", "nascimento_RG": "Data Nasc. RG (%)", \
-    "CPF_RG": "CPF RG (%)", "doc_origem_RG": "Doc. Origem RG (%)", \
-    "predict_time_secs": "Tempo Predição (s)", "detect_time_secs": "Tempo Detecção (s)", \
-    "ocr_time_secs": "Tempo OCR (s)", "detect_ocr_total": "Tempo Total (s)", "latency_total": "Tempo Total + Latência (s)" \
+CAMPOS_ACURACIA = {"cnh": "CNH", "cnh_frente": "CNH Frente", 
+    "nome_cnh":"Nome CNH (%)", "identidade_cnh": "Identidade CNH (%)", "cpf_cnh": "CPF CNH (%)", "nascimento_cnh": "Data Nasc. CNH (%)",
+    "filiacao_cnh": "Filiação CNH (%)", "categoria_cnh": "Categoria CNH (%)", "registro_cnh": "Nº Registro CNH (%)", 
+    "validade_cnh": "Data Validade CNH (%)", "pri_habilitacao_cnh": "Data 1ª Habil. CNH (%)", "observacao_cnh": "Observações CNH (%)",
+    "local_emissao_cnh": "Local Emissão CNH (%)", "data_emissao_cnh": "Data Emissão CNH (%)", "foto_cnh": "Foto CNH", 
+    "rg_frente": "RG Frente", "rg_verso": "RG Verso", 
+    "nome_rg": "Nome RG (%)", "registro_geral_rg": "Nº Reg. Geral RG (%)", "data_expedicao_rg": "Data Exped. RG (%)",
+    "filiacao_rg": "Filiação RG (%)", "naturalidade_rg": "Naturalidade RG (%)", "nascimento_rg": "Data Nasc. RG (%)",
+    "cpf_rg": "CPF RG (%)", "doc_origem_rg": "Doc. Origem RG (%)", "cabecalho_rg": "Cabecalho RG (%)",
+    "foto_rg": "Foto RG", "assinatura_rg": "Assinatura RG", "digital_rg": "Digital RG", 
+    "rg2_frente": "RG2 Frente", "rg2_verso": "RG2 Verso", 
+    "nome_rg2": "Nome RG2 (%)", "registro_geral_rg2": "Nº Reg. Geral RG2 (%)",
+    "filiacao_rg2": "Filiação RG2 (%)", "naturalidade_rg2": "Naturalidade RG2 (%)", "nascimento_rg2": "Data Nasc. RG2 (%)",
+    "cpf_rg2": "CPF RG2 (%)", "cabecalho_rg2": "Cabecalho RG2 (%)",
+    "foto_rg2": "Foto RG2", 
+    "predict_time_secs": "Tempo Predição (s)", "detect_time_secs": "Tempo Detecção (s)",
+    "ocr_time_secs": "Tempo OCR (s)", "detect_ocr_total": "Tempo Total (s)", "latency_total": "Tempo Total + Latência (s)",
+    "timers": "Timers"
     }
 
 def tty_color(cor = None):
@@ -118,6 +133,40 @@ def tty_color(cor = None):
     if c == "reverse": return "\033[;7m"
     return ""
 
+def trata_string(s,caracteres_permitidos = ""):
+    newS = MO.translate_extchar(s).upper()
+    if caracteres_permitidos:
+        newS = ''.join([c for c in newS if c in caracteres_permitidos])
+    while '  ' in newS:
+        newS = newS.replace('  ',' ')
+    return newS.strip()
+
+def trata_campo(campo,lista):
+    campo = campo.lower()
+
+    if campo.startswith('foto') or campo.startswith('cnh') or campo.startswith('rg') \
+    or campo.startswith('assinatura') or campo.startswith('digital'):
+        return lista
+    
+    filtro = ""
+    if campo.startswith('cpf_'):
+        filtro = "0123456789"
+    # if campo.startswith('identidade') or campo.startswith('registro_geral'):
+    #     filtro = ""
+    # elif campo.startswith('cpf') or campo.startswith('registro'):
+    #     filtro = "0123456789"
+    # elif campo.startswith('nome') or campo.startswith('filiacao'):
+    #     filtro = "ABCDEFGHIJKLMNOPQRSTUVWXYZ =\n"
+    # elif campo.startswith('nascimento') or campo.startswith('validade') \
+    # or campo.startswith('pri_habilitacao') or campo.startswith('data_'):
+    #     filtro = "0123456789/-."
+    # elif campo.startswith('local_emissao') or campo.startswith('naturalidade'):
+    #     filtro = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ,"
+    # elif campo.startswith('doc_origem'):
+    #     filtro = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ,.-"
+
+    return [trata_string(s,filtro) for s in lista]
+
 def compare_and_rate(s_orig, t_orig):
     '''
     A função compare_and_rate compara duas strings 's' e 't' e retorna um valor entre 0 e 1,
@@ -130,18 +179,28 @@ def compare_and_rate(s_orig, t_orig):
     t = t_orig.replace('\n',' ')
     if s == t:
         rate = 1
-
     else:
-        rate,_ = MO.cmp_rate(s,t,1)
-        #difs = difflib.SequenceMatcher(None, s, t)
-        #rate = float(sum([m.size for m in difs.get_matching_blocks()])) / float(len(s))
+        #rate,difs = MO.cmp_rate(s,t,1)
+        seqs = difflib.SequenceMatcher(None, s, t)
+        nch = sum([m.size for m in seqs.get_matching_blocks()])
+        rate = float(nch) / len(s) if s else 1
+        difs = len(s)+len(t) - 2 * nch
+
         if rate == 1:
-            rate = 0.9995
-    rate_str = "PERFECT MATCH   " if rate == 1 \
-          else "MATCH           " if rate >= 0.75 \
-          else "GoodPartialMatch" if rate >= 0.5 \
-          else "BadPartialMatch " if rate >= 0.125 \
-          else "Fail            "
+            if s.replace(' ','') == t.replace(' ',''):
+                rate = 0.9998
+            elif difs <= 2:
+                rate = 0.9997
+            elif s.replace(' ','') in t.replace(' ',''):
+                rate = 0.9996
+            else:
+                rate = 0.9995
+    rate_str = "PERFECT MATCH       " if rate == 1 \
+          else "ALMOST PERFECT MATCH" if rate >= 0.9995 \
+          else "MATCH               " if rate >= 0.75 \
+          else "GoodPartialMatch    " if rate >= 0.5 \
+          else "BadPartialMatch     " if rate >= 0.125 \
+          else "Fail                "
 
     return rate,rate_str
 
@@ -295,6 +354,8 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
     global AMBIENTE
     global CAMPOS_ACURACIA
     global LAP_TIME
+    global OCR_TEST_TYPE
+    global SHOW_EXTRACTED_VALUES
 
     if LAP_TIME is None:
         LAP_TIME = datetime.now()
@@ -311,8 +372,11 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
         filename_valores = ME.getOsPathName(img_filename,newExt='.json')
         valfile = open(filename_valores, "r")
         expected_values = json.loads(valfile.read())
-        for obj_name in ['tipo_doc','digital_RG','foto_RG','foto_CNH','assinatura_RG','RG_frente','RG_verso','CNH','CNH_frente', \
-            ]: # 'doc_origem_RG' ]:
+        expected_values_novo = {}
+        for obj_name in expected_values:
+            expected_values_novo[obj_name.lower()] = expected_values[obj_name]
+        expected_values = expected_values_novo
+        for obj_name in ['tipo_doc']:
             if obj_name in expected_values:
                 del expected_values[obj_name]
         valfile.close()
@@ -324,21 +388,22 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
     num_ocr_nao_vazio = 0
     num_campos_esperados = len(expected_values)
     num_campos_detectados = 0
+    print(f'Numero de Campos Esperados = {num_campos_esperados}')
 
     # Obter o Bearer Token
     header_dic = cria_header_autentikus()
+
+    #header_req = header_dic.copy()
+    header_dic["requester"]   = os.path.split(sys.argv[0])[-1]
+    header_dic["vcdoc_param_avaliar_rotacao"] = '1' if ASK_ROTATE else '0' 
+    header_dic["vcdoc_param_ocr_solicitado"]  = '2' if USE_EASYOCR else '1'
+    header_dic["vcdoc_param_crop_height"] = '48' if CROP_HEIGHT < 24 else str(CROP_HEIGHT)
+    header_dic["vcdoc_param_largura_de_redimensionamento_imagem"] = LARG_MAXIMA if USE_RESIZE else 0
+    header_dic["vcdoc_param_preprocessamento_multiline"] = FFPP
+    header_dic["vcdoc_param_preprocessamento_singleline"] = OFPP
+
     #header_dic = {}
-    img_ba64 = base64.b64encode(data).decode("utf-8")
-    post_data = {"image": img_ba64,
-        "requester": os.path.split(sys.argv[0])[-1],
-        "get_img_flg": True,
-        "resize": LARG_MAXIMA if USE_RESIZE else 0, 
-        "ffpp": FFPP, 
-        "ofpp": OFPP, 
-        "align": 1 if ASK_ROTATE else 0, 
-        "ocr_kind": 2 if USE_EASYOCR else 1, 
-        "crop_height": 48 if CROP_HEIGHT < 24 else CROP_HEIGHT 
-        }
+    post_data = {"image": base64.b64encode(data).decode("utf-8") }
 
     try:
         if use_local_server:
@@ -410,12 +475,20 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
     dic_acuracia = {
         "arquivo" : img_filename
     }
+    for campo in expected_values:
+        dic_acuracia[campo.lower()] = 0.0
 
     if "resultlist" not in res:
-        print("Problema de conexão com a API")
+        print("Problema de conexão com a API.\nJson retornado:")
+        print(res)
         detected_objs = None
     else:
+        nomesObjetos = [element['obj_name'].lower() for element in res['resultlist']] # crio um array só com os obj_names detectados
+        if "cpf_rg" in expected_values and "cpf_rg" not in nomesObjetos:
+            res['resultlist'] += [{'obj_name':'cpf_rg', 'score':1.0, 'ocr_text':'', 'adjusted_ocr':''}]
+
         num_objs = len(res['resultlist'])
+
         print('Num. de objetos detectados: {}'.format(num_objs))
         detected_objs = []
         img = cv2.imread(nome_work)
@@ -433,7 +506,7 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
             if prim_nres > 0:
                 id_nres = prim_nres if nres == 0 else 0 if nres == prim_nres else nres
             yolo_result = res['resultlist'][id_nres]
-            detec = yolo_result['obj_name']
+            detec = yolo_result['obj_name'].lower()
             scoreObj = yolo_result['score'] * 100
             detected_objs.extend([detec])
             candidatos = []
@@ -456,13 +529,6 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
                 num_campos_detectados += 1
                 #print(f"Detectando campo '{detec}'")
                 
-                if detec.startswith("cpf_"):
-                    if rt == expected_values[detec]:
-                        CPF_OK += 1
-                        cor_fonte = tty_color("green")
-                    else:
-                        CPF_NOK += 1
-                        cor_fonte = tty_color("red")
                 esperado = expected_values[detec]
                 if detec.startswith('filiacao'):
                     if '=' in esperado:
@@ -470,22 +536,43 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
                         rt0 = rt0.replace('\n','=')
                         rt1 = rt1.replace('\n','=')
 
+                rt,rt0,esperado = trata_campo(detec,(rt,rt0,esperado))
+
                 rate_match, match_str = compare_and_rate(esperado, rt)
                 ocr_rate,ocr_match = compare_and_rate(esperado, rt0)
                 if detec.startswith('nome_') or detec.startswith('filiacao_'):
                     write_ocr_and_adjusted(rt0,rt1,expected_values[detec])
-                if ocr_rate > rate_match:
+
+                if OCR_TEST_TYPE == 1:
+                    rate_match = ocr_rate
+                    match_str = ocr_match
+                    rt = rt0
+
+                if (OCR_TEST_TYPE == 3) and (ocr_rate > rate_match):
                     rate_match = ocr_rate
                     match_str = ocr_match
                     rt = rt0
                     if cor_fonte == "": cor_fonte = tty_color("blue")
+
+                if detec.startswith("cpf_"):
+                    if rate_match == 1:
+                        CPF_OK += 1
+                        cor_fonte = tty_color("green")
+                    else:
+                        CPF_NOK += 1
+                        cor_fonte = tty_color("red")
                 
                 dic_acuracia[detec] = rate_match
                 num_matches += rate_match
 
-            print("{:3d}: {:32s} - Score={:6.2f}% =>".format(nres,detec,scoreObj), end=" ")
-            print("{}{} - {}{}".format(cor_fonte,match_str,rt,tty_color("reset") if cor_fonte != "" else ""))
-            #print(f"      OCR      = '{rt0}'\n      Ajustado = '{rt1}'")
+            if SHOW_EXTRACTED_VALUES:
+                print("{:3d}: {:32s} - Score={:6.2f}% =>".format(nres,detec,scoreObj), end=" ")
+                print("{}{} - {}{}".format(cor_fonte,match_str,rt,tty_color("reset") if cor_fonte != "" else ""))
+                print(f"      OCR      = '{rt0}'\n      Ajustado = '{rt1}'")
+            else:
+                print("{:3d}: {:32s} =>".format(nres,detec), end=" ")
+                print("{}{} - {}{}".format(cor_fonte,match_str,rt,tty_color("reset") if cor_fonte != "" else ""))
+
             #if candidatos != []:
             #    print("     - Ajustado:   \"{}\"".format(rc))
             #    print("     - Candidatos: {}".format(str(candidatos)))
@@ -495,6 +582,8 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
         if num_campos_detectados <= 2 and num_ocr_nao_vazio <= 1: # significa que não conseguiu detectar direito o documento
             num_campos_detectados = 0
 
+    if 'timers' in res: print(f'Timers: {res["timers"]}')
+
     metricas = {'num_matches': num_matches, 
         'num_ocr_nao_vazio': num_ocr_nao_vazio, 
         'num_campos_detectados': num_campos_detectados, 
@@ -502,6 +591,8 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
 
     print(f'Tempo do Processo de Detecção/OCR: {res["detect_ocr_time"] if "detect_ocr_time" in res else "N/A"}')
     print(" ")
+    if "timers" in res:
+        dic_acuracia["timers"] = res["timers"]
 
     if "predict_time_secs" in res:
         dic_acuracia["predict_time_secs"] = res["predict_time_secs"]
@@ -616,10 +707,41 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
         else:
             prefixo = "{:02d}".format(int(100 * float(area_foto_cnh) / float(area_cnh)))
 
-        nome_result_img = os.path.join(ME.DIR_TRAIN,prefixo + "_" + os.path.split(nome_work)[1])
-        nome_result_tag = os.path.join(ME.DIR_TRAIN,prefixo + "_" + os.path.split(nome_work)[1])
+        prefixo = prefixo + '_' if TAG_FILE_COM_PREFIXO_PERCENTUAL else ''
+
+        nome_result_img = os.path.join(ME.DIR_TRAIN,prefixo + os.path.split(nome_work)[1])
+        nome_result_tag = os.path.join(ME.DIR_TRAIN,prefixo + os.path.split(nome_work)[1])
         nome_result_tag = os.path.splitext(nome_result_tag)[0] + '.txt'
+
+        nome_result_ground_truth = os.path.join(ME.DIR_TRAIN,prefixo + os.path.split(nome_work)[1])
+        nome_result_ground_truth = os.path.splitext(nome_result_tag)[0] + '.json'
+
         print(f"\nGerando arquivo de tag em \'{nome_result_tag}\'")
+        print(f"\nGerando arquivo de ground truth em \'{nome_result_ground_truth}\'")
+
+        nRG = nCNH = 0
+        for elemento in res['resultlist']:
+            nome = elemento['obj_name']
+            if   "_rg" in nome:
+                nRG += 1
+            elif nome.startswith("rg"):
+                nRG += 1
+            elif "_cnh" in nome:
+                nCNH += 1
+            elif nome.startswith("cnh"):
+                nCNH += 1
+        tipoDoc = 'cnh' if nCNH > nRG else 'rg'
+
+        jsonStr = '{' + f'\n  "tipo_doc" : "{tipoDoc}",'
+        for elemento in res['resultlist']:
+            nome = elemento['obj_name']
+            valor = elemento['adjusted_ocr']
+            jsonStr += f'\n  "{nome}" : "{valor.upper()}",'
+        jsonStr = jsonStr[:-1] + '\n}'
+
+        gt = open(nome_result_ground_truth,'w')
+        gt.write(jsonStr)
+        gt.close()
 
         ftag = open(nome_result_tag,"w")
         for elemento in res['resultlist']:
@@ -635,11 +757,11 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
 
             nome_objeto = elemento["obj_name"].lower()
             if ANONYMIZE_IMAGES:
-                if nome_objeto in ["foto_cnh","foto_rg"]:
+                if nome_objeto.startswith("foto_"):
                     cv2.rectangle(imagem_recog,(int(xmin+widt//10), int(ymin+heig//2)), (int(xmin+widt-widt//10),int(ymin+heig-widt//10)), (124,124,124), cv2.FILLED)
                     cv2.circle( imagem_recog, (int(xmin+widt//2), int(ymin+heig//3)), min(heig//4,widt//3), (124,124,124), cv2.FILLED)
-                elif nome_objeto not in ["cnh","cnh_frente","rg_frente","rg_verso"]:
-                    fator = 0.7 if nome_objeto in ["filiacao_cnh", "filiacao_rg"] else 0.4 
+                elif nome_objeto not in ["cnh","cnh_frente","rg_frente","rg_verso","rg2_frente","rg2_verso"]:
+                    fator = 0.7 if nome_objeto.startswith("filiacao_") else 0.4 
                     fator = (1 - fator) / 2.0
                     xanon = int(xmin+heig*fator)
                     yanon = int(ymin+heig*fator)
@@ -699,23 +821,26 @@ def verifyArquivo(nomearq, dir_work):
 
     if detectado is not None:
         for dc in detectado:
-            if dc in ["CNH","CNH_frente"]:
+            if dc in ["cnh","cnh_frente"]:
                 docCNH += 1
-            if dc == "RG_frente":
+            if dc in ["rg_frente","rg2_frente"]:
                 docRGF += 1
-            if dc == "RG_verso":
+            if dc in ["rg_verso","rg2_verso"]:
                 docRGV += 1
             if dc in [ \
-                "nome_CNH","identidade_CNH","cpf_CNH", \
-                "nascimento_CNH","filiacao_CNH","registro_CNH", \
-                "validade_CNH","pri_habilitacao_CNH", \
-                "local_emissao_CNH","data_emissao_CNH"]:
+                "nome_cnh","identidade_cnh","cpf_cnh", \
+                "nascimento_cnh","filiacao_cnh","registro_cnh", \
+                "validade_cnh","pri_habilitacao_cnh", \
+                "local_emissao_cnh","data_emissao_cnh", \
+                "categoria_cnh","observacao_cnh"]:
                 classeCNH += 1
             elif dc in [ \
-                "nome_RG","assinatura_RG","digital_RG", \
-                "registro_geral","data_expedicao_RG","filiacao_RG", \
-                "naturalidade_RG","nascimento_RG","doc_origem_RG", \
-                "CPF_RG"]:
+                "nome_rg","assinatura_rg","digital_rg", \
+                "registro_geral_rg","data_expedicao_rg","filiacao_rg", \
+                "naturalidade_rg","nascimento_rg","doc_origem_rg", \
+                "cpf_rg","cabecalho_rg", \
+                "nome_rg2","filiacao_rg2","nascimento_rg2","naturalidade_rg2", \
+                "cpf_rg2","registro_geral_rg2","cabecalho_rg2"]:
                 classeRG += 1
 
         detectedRG = "S" if docCNH == 0 and classeRG > 0 and docRGF <= 1 and docRGV <= 1 and docRGF+docRGV > 0 else "N"
@@ -793,6 +918,8 @@ def main():
     global CAMPOS_ACURACIA
     global CPF_OK
     global CPF_NOK
+    global OCR_TEST_TYPE
+    global SHOW_EXTRACTED_VALUES
     
     # Defino argumentos da linha de comando
     parser = argparse.ArgumentParser()
@@ -805,9 +932,11 @@ def main():
     parser.add_argument("-r","--ask_rotate", action='store_true', help="Require server to make a rotation alignment if necessary")
     parser.add_argument("-e","--easyocr", action='store_true', help="Try to use EasyOCR instead Tesseract as OCR Engine")
     parser.add_argument("-d","--divide", action='store_true', help="Save CNH divided")
+    parser.add_argument("-x","--show_extracted_values", action='store_true', help="Show extracted values (Raw OCR and Adjusted OCR)")
     parser.add_argument("-c","--crop", type=int, default=48, help="Crop height used on server-side")
-    parser.add_argument("-fp","--ffpp", type=int, default=3, help="Filiacao Field PreProc")
-    parser.add_argument("-op","--ofpp", type=int, default=1, help="Other Fields PreProc")
+    parser.add_argument("-o","--ocr_test", type=int, default=3, help="OCR Test Type. 1=Raw OCR || 2=Adjusted OCR || 3=Both")
+    parser.add_argument("-pm","--ffpp", type=str, default='3', help="PreProc-Multiline Type")
+    parser.add_argument("-ps","--ofpp", type=str, default='1', help="PreProc-SingleLine Type")
     parser.add_argument("-nr","--no_resize", action='store_true',  help="Try resize image in OCR")
     parser.add_argument("-w","--width", type=int, default=None, help="Max width for resize in OCR")
     args = parser.parse_args()
@@ -818,12 +947,14 @@ def main():
     arquivos = args.images_or_paths
     USE_LOCAL_SERVER = args.local
     SHOW_RESULT_JSON = args.json
+    SHOW_EXTRACTED_VALUES = args.show_extracted_values
     SAVE_RESULT_IMAGE = args.save
     SAVE_TAG_MARKER_FILE = args.tags
     SAVE_PERCENTUAL_ACCURACY = args.accuracy
     ASK_ROTATE = args.ask_rotate
     USE_EASYOCR = args.easyocr
     CROP_HEIGHT = args.crop
+    OCR_TEST_TYPE = args.ocr_test if args.ocr_test in [1,2,3] else 3
     if SAVE_TAG_MARKER_FILE: 
         ASK_ROTATE = False
 
@@ -881,7 +1012,7 @@ def main():
 
     printOUT("")
     if sum_max_matches > 0:
-        printOUT("Percentual de Acerto Médio = {:5.2f}%".format(float(sum_matches)/sum_max_matches*100.0))
+        printOUT("Percentual de acerto = {:5.2f}%".format(float(sum_matches)/sum_max_matches*100.0))
     
     horaFinalProcesso = datetime.now()
 

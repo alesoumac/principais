@@ -229,67 +229,9 @@ class DocumentImage:
             self.timers.endClock('yolo')
 
     def runCalculateAdditionalFields(self):
-        # -------------------------------------------------------------------------------------------
-        # quando o campo Observação da CNH for incluído no arquivo de pesos da rede Yolo, o bacalhau abaixo poderá ser retirado
-        def getRectangle(resultList,elementName):
-            for n in range(len(resultList)):
-                elemento = resultList[n]
-                obj_name = elemento['obj_name'].lower()
-                if elementName.lower() != obj_name: continue
-                x1,y1,w,h = list(elemento['bounding_box'].values())
-                return [x1,y1,x1+w,y1+h]
-            return []
-
-        def codfishIncludeOtherFields(resultList):
-            R = getRectangle(resultList,'registro_cnh')
-            P = getRectangle(resultList,'pri_habilitacao_cnh')
-            L = getRectangle(resultList,'local_emissao_cnh')
-            E = getRectangle(resultList,'data_emissao_cnh')
-            F = getRectangle(resultList,'filiacao_cnh')
-            incluir_categoria = True
-            incluir_observacao = True
-            try:
-                x2cat = (F[2] + P[2]) // 2
-                x1cat = x2cat - int((x2cat-P[0]) * 0.45)
-                y1cat = F[3]
-                y2cat = (P[1] + R[1]) // 2
-                y1cat += int((y2cat-y1cat) * 0.3)
-            except:
-                incluir_categoria = False
-
-            try:
-                x1obs = (R[0]+L[0]) // 2
-                x2obs = (P[2]+E[2]) // 2
-                y1obs = min(R[3],P[3]) + int((R[3]-R[1]) * 0.4)
-                y2obs = max(L[1],E[1]) - int((R[3]-R[1]) * 1.2)
-            except:
-                incluir_observacao = False
-
-            if incluir_categoria:
-                resultList += [{
-                    'class_index': 26, 
-                    'obj_name': 'categoria_CNH', 
-                    'bounding_box': {'x_min': x1cat, 'y_min': y1cat, 'width': x2cat-x1cat, 'height': y2cat-y1cat}, 
-                    'score': 0.99995
-                }]
-
-            if incluir_observacao:
-                resultList += [{
-                    'class_index': 27, 
-                    'obj_name': 'observacao_CNH', 
-                    'bounding_box': {'x_min': x1obs, 'y_min': y1obs, 'width': x2obs-x1obs, 'height': y2obs-y1obs}, 
-                    'score': 0.99995
-                }]
-        # -------------------------------------------------------------------------------------------
-        self.timers.startClock('calc_additional_fields')
-        processMissingPhoto(self.getResultJSON(), self.workImage)
-
-        # -------------------------------------------------------------------------------------------
-        # quando os campos Observação e Categoria da CNH forem incluídos no arquivo de pesos da rede 
-        # Yolo, o bacalhau abaixo poderá ser retirado
-        codfishIncludeOtherFields(self.getResultJSON()['resultlist'])
-        # -------------------------------------------------------------------------------------------
-        self.timers.endClock('calc_additional_fields')
+        # self.timers.startClock('calc_additional_fields')
+        # processMissingPhoto(self.getResultJSON(), self.workImage)
+        # self.timers.endClock('calc_additional_fields')
         return
 
     # ----------------------------------------------------------------
@@ -472,83 +414,85 @@ class DocumentImage:
                 self.resultJSON['detect_ocr_time'] = self.timers.totals['total']
 
 
-def processMissingPhoto(result_json_cnh, img_face_rec):
-    if vc_constants.FIELD_RESULT_LIST not in result_json_cnh:
-        return result_json_cnh
+# def processMissingPhoto(result_json_cnh, img_face_rec):
+#     return result_json_cnh
 
-    tem_foto = False
-    n_cnh = 0
+    # if vc_constants.FIELD_RESULT_LIST not in result_json_cnh:
+    #     return result_json_cnh
 
-    x_foto = 0
-    n_x = 0
-    y_foto = 0
-    n_y = 0
-    x2_foto = 0
-    n_x2 = 0
-    y2_foto = 0
-    n_y2 = 0
-    provavel_rg = False
+    # tem_foto = False
+    # n_cnh = 0
 
-    for element in result_json_cnh[vc_constants.FIELD_RESULT_LIST]:
-        bbox = element[vc_constants.FIELD_BOUNDING_BOX]
-        nome_elemento = element[vc_constants.FIELD_OBJ_NAME].lower()
-        if nome_elemento in ['foto_cnh', 'foto_rg']:
-            tem_foto = True
+    # x_foto = 0
+    # n_x = 0
+    # y_foto = 0
+    # n_y = 0
+    # x2_foto = 0
+    # n_x2 = 0
+    # y2_foto = 0
+    # n_y2 = 0
+    # provavel_rg = False
 
-        if nome_elemento in ['cnh','cnh_frente']:
-            n_cnh += 1
-        if nome_elemento in ['nome_cnh', 'registro_cnh']:
-            x_foto += bbox['x_min']
-            n_x += 1
-        if nome_elemento in ['nome_cnh', 'identidade_cnh']:
-            y_foto += bbox['y_min'] + (bbox['height'] if nome_elemento == 'nome_cnh' else 0) 
-            n_y += 1
-        if nome_elemento in ['identidade_cnh', 'cpf_cnh', 'filiacao_cnh','validade_cnh']:
-            x2_foto += bbox['x_min']
-            n_x2 += 1
-        if nome_elemento in ['registro_cnh', 'validade_cnh', 'pri_habilitacao_cnh']:
-            y2_foto += bbox['y_min'] 
-            n_y2 += 1
-        if '_rg' in nome_elemento or 'rg_' in nome_elemento:
-            provavel_rg = True
+    # for element in result_json_cnh[vc_constants.FIELD_RESULT_LIST]:
+    #     bbox = element[vc_constants.FIELD_BOUNDING_BOX]
+    #     nome_elemento = element[vc_constants.FIELD_OBJ_NAME].lower()
+    #     if nome_elemento.startswith('foto_'):
+    #         tem_foto = True
 
-    if not tem_foto and (n_x == 0 or n_x2 == 0 or n_y == 0 or n_y2 == 0):
-        # # executar o reconhecimento facial via dlib
-        # # para obter: x_foto, x2_foto, y_foto e y2_foto
-        # x_foto, y_foto, x2_foto, y2_foto, n_x, n_y, n_x2, n_y2 = reconhece_face_dlib(img_face_rec)
+    #     if nome_elemento in ['cnh','cnh_frente']:
+    #         n_cnh += 1
+    #     if nome_elemento in ['nome_cnh', 'registro_cnh']:
+    #         x_foto += bbox['x_min']
+    #         n_x += 1
+    #     if nome_elemento in ['nome_cnh', 'identidade_cnh']:
+    #         y_foto += bbox['y_min'] + (bbox['height'] if nome_elemento == 'nome_cnh' else 0) 
+    #         n_y += 1
+    #     if nome_elemento in ['identidade_cnh', 'cpf_cnh', 'filiacao_cnh','validade_cnh']:
+    #         x2_foto += bbox['x_min']
+    #         n_x2 += 1
+    #     if nome_elemento in ['registro_cnh', 'validade_cnh', 'pri_habilitacao_cnh']:
+    #         y2_foto += bbox['y_min'] 
+    #         n_y2 += 1
+    #     if '_rg' in nome_elemento or 'rg_' in nome_elemento:
+    #         provavel_rg = True
 
-        # executar o reconhecimento facial via DNN
-        # para obter: x_foto, x2_foto, y_foto e y2_foto
-        x_foto, y_foto, x2_foto, y2_foto, n_x, n_y, n_x2, n_y2 = vc_img_process.reconhece_face_dnn(img_face_rec)
+    # if not tem_foto and (n_x == 0 or n_x2 == 0 or n_y == 0 or n_y2 == 0):
+    #     # # executar o reconhecimento facial via dlib
+    #     # # para obter: x_foto, x2_foto, y_foto e y2_foto
+    #     # x_foto, y_foto, x2_foto, y2_foto, n_x, n_y, n_x2, n_y2 = reconhece_face_dlib(img_face_rec)
 
-    if tem_foto \
-    or n_cnh >= 2 \
-    or n_x == 0 or n_x2 == 0 or n_y == 0 or n_y2 == 0:
-        return result_json_cnh
+    #     # executar o reconhecimento facial via DNN
+    #     # para obter: x_foto, x2_foto, y_foto e y2_foto
+    #     x_foto, y_foto, x2_foto, y2_foto, n_x, n_y, n_x2, n_y2 = vc_img_process.reconhece_face_dnn(img_face_rec)
 
-    x_foto = int(x_foto / n_x)
-    y_foto = int(y_foto / n_y)
-    x2_foto = int(x2_foto / n_x2)
-    y2_foto = int(y2_foto / n_y2)
+    # if tem_foto \
+    # or n_cnh >= 2 \
+    # or n_x == 0 or n_x2 == 0 or n_y == 0 or n_y2 == 0:
+    #     return result_json_cnh
 
-    if provavel_rg:
-        result_json_cnh[vc_constants.FIELD_RESULT_LIST] += [         
-            {
-                'class_index': 13, 
-                'obj_name': 'foto_RG', 
-                'bounding_box': {'x_min': x_foto, 'y_min': y_foto, 'width': x2_foto-x_foto, 'height': y2_foto-y_foto}, 
-                'score': 0.939876 
-            }]
-    else:
-        result_json_cnh[vc_constants.FIELD_RESULT_LIST] += [         
-            {
-                'class_index': 0, 
-                'obj_name': 'foto_CNH', 
-                'bounding_box': {'x_min': x_foto, 'y_min': y_foto, 'width': x2_foto-x_foto, 'height': y2_foto-y_foto}, 
-                'score': 0.939876 
-            }]
+    # x_foto = int(x_foto / n_x)
+    # y_foto = int(y_foto / n_y)
+    # x2_foto = int(x2_foto / n_x2)
+    # y2_foto = int(y2_foto / n_y2)
 
-    return result_json_cnh
+    # if provavel_rg:
+    #     result_json_cnh[vc_constants.FIELD_RESULT_LIST] += [         
+    #         {
+    #             'class_index': 13, 
+    #             'obj_name': 'foto_rg', 
+    #             'bounding_box': {'x_min': x_foto, 'y_min': y_foto, 'width': x2_foto-x_foto, 'height': y2_foto-y_foto}, 
+    #             'score': 0.939876 
+    #         }]
+    # else:
+    #     result_json_cnh[vc_constants.FIELD_RESULT_LIST] += [         
+    #         {
+    #             'class_index': 0, 
+    #             'obj_name': 'foto_cnh', 
+    #             'bounding_box': {'x_min': x_foto, 'y_min': y_foto, 'width': x2_foto-x_foto, 'height': y2_foto-y_foto}, 
+    #             'score': 0.939876 
+    #         }]
+
+    # return result_json_cnh
 
 # =======================================================
 from itertools import combinations

@@ -57,14 +57,19 @@ CPF_NOK = 0
 
 CAMPOS_ACURACIA = {"cnh": "CNH", "cnh_frente": "CNH Frente", 
     "nome_cnh":"Nome CNH (%)", "identidade_cnh": "Identidade CNH (%)", "cpf_cnh": "CPF CNH (%)", "nascimento_cnh": "Data Nasc. CNH (%)",
-    "filiacao_cnh": "Filiação CNH (%)", "registro_cnh": "Nº Registro CNH (%)", "validade_cnh": "Data Validade CNH (%)", "pri_habilitacao_cnh": "Data 1ª Habil. CNH (%)",
-    "local_emissao_cnh": "Local Emissão CNH (%)", "data_emissao_cnh": "Data Emissão CNH (%)", 
-    "categoria_cnh": "Categoria CNH (%)", "observacao_cnh": "Observações CNH (%)",
+    "filiacao_cnh": "Filiação CNH (%)", "categoria_cnh": "Categoria CNH (%)", "registro_cnh": "Nº Registro CNH (%)", 
+    "validade_cnh": "Data Validade CNH (%)", "pri_habilitacao_cnh": "Data 1ª Habil. CNH (%)", "observacao_cnh": "Observações CNH (%)",
+    "local_emissao_cnh": "Local Emissão CNH (%)", "data_emissao_cnh": "Data Emissão CNH (%)", "foto_cnh": "Foto CNH", 
     "rg_frente": "RG Frente", "rg_verso": "RG Verso", 
     "nome_rg": "Nome RG (%)", "registro_geral_rg": "Nº Reg. Geral RG (%)", "data_expedicao_rg": "Data Exped. RG (%)",
     "filiacao_rg": "Filiação RG (%)", "naturalidade_rg": "Naturalidade RG (%)", "nascimento_rg": "Data Nasc. RG (%)",
-    "cpf_rg": "CPF RG (%)", "doc_origem_rg": "Doc. Origem RG (%)",
-    "foto_cnh": "Foto CNH", "foto_rg": "Foto RG", "assinatura_rg": "Assinatura RG", "digital_rg": "Digital RG", 
+    "cpf_rg": "CPF RG (%)", "doc_origem_rg": "Doc. Origem RG (%)", "cabecalho_rg": "Cabecalho RG (%)",
+    "foto_rg": "Foto RG", "assinatura_rg": "Assinatura RG", "digital_rg": "Digital RG", 
+    "rg2_frente": "RG2 Frente", "rg2_verso": "RG2 Verso", 
+    "nome_rg2": "Nome RG2 (%)", "registro_geral_rg2": "Nº Reg. Geral RG2 (%)",
+    "filiacao_rg2": "Filiação RG2 (%)", "naturalidade_rg2": "Naturalidade RG2 (%)", "nascimento_rg2": "Data Nasc. RG2 (%)",
+    "cpf_rg2": "CPF RG2 (%)", "cabecalho_rg2": "Cabecalho RG2 (%)",
+    "foto_rg2": "Foto RG2", 
     "predict_time_secs": "Tempo Predição (s)", "detect_time_secs": "Tempo Detecção (s)",
     "ocr_time_secs": "Tempo OCR (s)", "detect_ocr_total": "Tempo Total (s)", "latency_total": "Tempo Total + Latência (s)",
     "timers": "Timers"
@@ -138,7 +143,7 @@ def trata_campo(campo,lista):
         return lista
     
     filtro = ""
-    if campo.startswith('cpf'):
+    if campo.startswith('cpf_'):
         filtro = "0123456789"
     # if campo.startswith('identidade') or campo.startswith('registro_geral'):
     #     filtro = ""
@@ -169,13 +174,18 @@ def compare_and_rate(s_orig, t_orig):
     if s == t:
         rate = 1
     else:
-        rate,difs = MO.cmp_rate(s,t,1)
-        #difs = difflib.SequenceMatcher(None, s, t)
-        #rate = float(sum([m.size for m in difs.get_matching_blocks()])) / float(len(s))
+        #rate,difs = MO.cmp_rate(s,t,1)
+        seqs = difflib.SequenceMatcher(None, s, t)
+        nch = sum([m.size for m in seqs.get_matching_blocks()])
+        rate = float(nch) / len(s) if s else 1
+        difs = len(s)+len(t) - 2 * nch
+
         if rate == 1:
             if s.replace(' ','') == t.replace(' ',''):
                 rate = 0.9998
             elif difs <= 2:
+                rate = 0.9997
+            elif s.replace(' ','') in t.replace(' ',''):
                 rate = 0.9996
             else:
                 rate = 0.9995
@@ -356,7 +366,7 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
         for obj_name in expected_values:
             expected_values_novo[obj_name.lower()] = expected_values[obj_name]
         expected_values = expected_values_novo
-        for obj_name in ['tipo_doc']: #,'digital_RG','foto_RG','foto_CNH','assinatura_RG','RG_frente','RG_verso','CNH','CNH_frente']: # 'doc_origem_RG' ]:
+        for obj_name in ['tipo_doc']:
             if obj_name in expected_values:
                 del expected_values[obj_name]
         valfile.close()
@@ -680,15 +690,15 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
         nRG = nCNH = 0
         for elemento in res['resultlist']:
             nome = elemento['obj_name']
-            if   "_RG" in nome:
+            if   "_rg" in nome:
                 nRG += 1
-            elif nome.startswith("RG"):
+            elif nome.startswith("rg"):
                 nRG += 1
-            elif "_CNH" in nome:
+            elif "_cnh" in nome:
                 nCNH += 1
-            elif nome.startswith("CNH"):
+            elif nome.startswith("cnh"):
                 nCNH += 1
-        tipoDoc = 'CNH' if nCNH > nRG else 'RG'
+        tipoDoc = 'cnh' if nCNH > nRG else 'rg'
 
         jsonStr = '{' + f'\n  "tipo_doc" : "{tipoDoc}",'
         for elemento in res['resultlist']:
@@ -715,11 +725,11 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
 
             nome_objeto = elemento["obj_name"].lower()
             if ANONYMIZE_IMAGES:
-                if nome_objeto in ["foto_cnh","foto_rg"]:
+                if nome_objeto.startswith("foto_"):
                     cv2.rectangle(imagem_recog,(int(xmin+widt//10), int(ymin+heig//2)), (int(xmin+widt-widt//10),int(ymin+heig-widt//10)), (124,124,124), cv2.FILLED)
                     cv2.circle( imagem_recog, (int(xmin+widt//2), int(ymin+heig//3)), min(heig//4,widt//3), (124,124,124), cv2.FILLED)
-                elif nome_objeto not in ["cnh","cnh_frente","rg_frente","rg_verso"]:
-                    fator = 0.7 if nome_objeto in ["filiacao_cnh", "filiacao_rg"] else 0.4 
+                elif nome_objeto not in ["cnh","cnh_frente","rg_frente","rg_verso","rg2_frente","rg2_verso"]:
+                    fator = 0.7 if nome_objeto.startswith("filiacao_") else 0.4 
                     fator = (1 - fator) / 2.0
                     xanon = int(xmin+heig*fator)
                     yanon = int(ymin+heig*fator)
@@ -768,23 +778,26 @@ def verifyArquivo(nomearq, dir_work):
 
     if detectado is not None:
         for dc in detectado:
-            if dc in ["CNH","CNH_frente"]:
+            if dc in ["cnh","cnh_frente"]:
                 docCNH += 1
-            if dc == "RG_frente":
+            if dc in ["rg_frente","rg2_frente"]:
                 docRGF += 1
-            if dc == "RG_verso":
+            if dc in ["rg_verso","rg2_verso"]:
                 docRGV += 1
             if dc in [ \
-                "nome_CNH","identidade_CNH","cpf_CNH", \
-                "nascimento_CNH","filiacao_CNH","registro_CNH", \
-                "validade_CNH","pri_habilitacao_CNH", \
-                "local_emissao_CNH","data_emissao_CNH"]:
+                "nome_cnh","identidade_cnh","cpf_cnh", \
+                "nascimento_cnh","filiacao_cnh","registro_cnh", \
+                "validade_cnh","pri_habilitacao_cnh", \
+                "local_emissao_cnh","data_emissao_cnh", \
+                "categoria_cnh","observacao_cnh"]:
                 classeCNH += 1
             elif dc in [ \
-                "nome_RG","assinatura_RG","digital_RG", \
-                "registro_geral","data_expedicao_RG","filiacao_RG", \
-                "naturalidade_RG","nascimento_RG","doc_origem_RG", \
-                "CPF_RG"]:
+                "nome_rg","assinatura_rg","digital_rg", \
+                "registro_geral_rg","data_expedicao_rg","filiacao_rg", \
+                "naturalidade_rg","nascimento_rg","doc_origem_rg", \
+                "cpf_rg","cabecalho_rg", \
+                "nome_rg2","filiacao_rg2","nascimento_rg2","naturalidade_rg2", \
+                "cpf_rg2","registro_geral_rg2","cabecalho_rg2"]:
                 classeRG += 1
 
         detectedRG = "S" if docCNH == 0 and classeRG > 0 and docRGF <= 1 and docRGV <= 1 and docRGF+docRGV > 0 else "N"

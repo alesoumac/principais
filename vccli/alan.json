@@ -1,13 +1,13 @@
 {
-  "tipo_doc" : "CNH",
-  "nome_CNH" : "ALAN DE ANDRE",
-  "identidade_CNH" : "777472777IFPRJ",
-  "cpf_CNH" : "00000100064",
-  "nascimento_CNH" : "14/01/1996",
-  "filiacao_CNH" : "TEOFILO NEUZA",
-  "registro_CNH" : "00008001060",
-  "validade_CNH" : "12/02/2022",
-  "pri_habilitacao_CNH" : "26/11/2014",
-  "local_emissao_CNH" : "RIO DE JANEIRO, RJ",
-  "data_emissao_CNH" : "13/03/2017"
+  "tipo_doc" : "cnh",
+  "nome_cnh" : "ALAN DE ANDRE",
+  "identidade_cnh" : "777472777IFPRJ",
+  "cpf_cnh" : "00000100064",
+  "nascimento_cnh" : "14/01/1996",
+  "filiacao_cnh" : "TEOFILO NEUZA",
+  "registro_cnh" : "00008001060",
+  "validade_cnh" : "12/02/2022",
+  "pri_habilitacao_cnh" : "26/11/2014",
+  "local_emissao_cnh" : "RIO DE JANEIRO, RJ",
+  "data_emissao_cnh" : "13/03/2017"
 }
