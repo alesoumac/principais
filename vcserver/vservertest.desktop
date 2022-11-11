@@ -1,0 +1,20 @@
+[Desktop Entry]
+Comment[pt_BR]=
+Comment=
+Exec=/home/am/desenv/pas/apiclient/api1
+GenericName[pt_BR]=VCDOC Server Test
+GenericName=VCDOC Server Test
+Icon=/home/am/desenv/pas/apiclient/api1.ico
+MimeType=
+Name[pt_BR]=VCDOC Server Test
+Name=VCDOC Server Test
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-DBUS-ServiceName=
+X-DBUS-StartupType=
+X-KDE-RunOnDiscreteGpu=false
+X-KDE-SubstituteUID=false
+X-KDE-Username=

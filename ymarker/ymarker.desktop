@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Yolo Marker
+Exec=/home/am/desenv/pas/ymarker/ymarker
+Type=Application
+StartupNotify=true
+Comment=Yolo Marker
+Icon=/home/am/desenv/Bitmaps/Icones/AlexeyAB2.png
+
