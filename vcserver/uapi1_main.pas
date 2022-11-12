@@ -1094,7 +1094,6 @@ begin
             IsCNH := True;
           if (LowerCase(LeftStr(ObjName,2)) = 'rg')
           or (LowerCase(RightStr(ObjName,2)) = 'rg')
-          or (LowerCase(ObjName) = 'registro_geral')
           then
             IsRG := True;
           if (LowerCase(ObjName) = 'local_emissao_cnh')
@@ -1160,6 +1159,26 @@ begin
   for i := 1 to grdValores.RowCount - 1 do
   begin
     Chave := grdValores.Cells[0,i];
+    if (TipoDoc = 'rg_frente')
+    and (
+      (Chave = 'rg_frente') or
+      (Chave = 'foto_rg') or
+      (Chave = 'assinatura_rg') or
+      (Chave = 'digital_rg')
+      )
+    then else
+    if (TipoDoc = 'cnh_frente')
+    and (
+      (Chave = 'foto_cnh') or
+      (Chave = 'cnh_frente')
+      )
+    then else
+    if (TipoDoc = 'cnh')
+    and (
+      (Chave = 'foto_cnh') or
+      (Chave = 'cnh')
+      )
+    then else
     if grdValores.Cells[4,i] = '' then Continue;
     J := J + ', "' + Chave + '": ""'
   end;

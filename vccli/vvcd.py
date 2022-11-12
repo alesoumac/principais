@@ -469,8 +469,7 @@ def get_json_imagem(img_filename, use_local_server, dir_work):
     else:
         nomesObjetos = [element['obj_name'].lower() for element in res['resultlist']] # crio um array só com os obj_names detectados
         if "cpf_rg" in expected_values and "cpf_rg" not in nomesObjetos:
-            res['resultlist'] += [{'obj_name':'cpf_rg', 'score':1.0, 'ocr_text':'', 'adjusted_ocr':''}]
-
+            res['resultlist'] += [{'class_index':22, 'obj_name':'cpf_rg', 'score':1.0, 'ocr_text':'', 'adjusted_ocr':'', 'bounding_box': {'x_min':0,'y_min':0,'width':1,'height':1}}]
         num_objs = len(res['resultlist'])
 
         print('Num. de objetos detectados: {}'.format(num_objs))

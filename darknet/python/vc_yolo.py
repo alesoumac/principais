@@ -40,15 +40,19 @@ def convert_json_types(obj):
 
 def key_name(x):
     idx = x["class_index"]
-    nome = x["obj_name"]
-    if nome.lower().startswith("cnh"):
+    nome = x["obj_name"].lower()
+    if nome.startswith("cnh"):
         return idx
-    elif nome.lower().endswith("_cnh"):
+    elif nome.endswith("_cnh"):
         return idx + 100
-    elif nome.lower().startswith("rg_"):
+    elif nome.startswith("rg_"):
         return idx + 200
-    else:
+    elif nome.endswith("_rg"):
         return idx + 300
+    elif nome.startswith("rg2_"):
+        return idx + 400
+    else:
+        return idx + 500
 
 def yoloDetectDNN(img_np_bgr, threshold = 0.5):
     global YOLO_NET

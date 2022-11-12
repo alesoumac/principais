@@ -14,9 +14,9 @@ import vc_req_params
 import vc_utils
 import vc_yolo
 
-EXTERNAL_DOC_FIELDS = ['cnh', 'cnh_frente', 'rg_frente', 'rg_verso']
+EXTERNAL_DOC_FIELDS = ['cnh', 'cnh_frente', 'rg_frente', 'rg_verso', 'rg2_frente', 'rg2_verso']
 
-POSSIBLE_DOC_CLASSES = ['cnh','rg']
+POSSIBLE_DOC_CLASSES = ['cnh','rg','rg2']
 
 ALIGNED_FIELDS_LIST = {}
 ALIGNED_FIELDS = {
@@ -25,7 +25,8 @@ ALIGNED_FIELDS = {
         ('registro_cnh','validade_cnh','pri_habilitacao_cnh'),
         ('local_emissao_cnh','data_emissao_cnh')
     ],
-    'rg': []
+    'rg': [],
+    'rg2': []
 }
 # A variável acima ALIGNED_FIELDS contém as sequencias de campos que devem estar 
 # alinhados em cada classe de documento, e será usada na função "calculateAngle",
@@ -104,7 +105,7 @@ class DocumentImage:
         if type(doc_class) is list:
             # Se o parâmetro doc_class for uma lista, verifico se o documento é de uma das classes dentro dessa lista.
             # Por exemplo:
-            #     instanciaDocumento.documentClassIs(['rg_frente','rg_verso'])
+            #     instanciaDocumento.documentClassIs(['rg'])
             #     retorna True, se instanciaDocumento for uma rg_frente ou uma rg_verso
             for a_class in doc_class:
                 if self.documentClassIs(a_class):
@@ -119,7 +120,7 @@ class DocumentImage:
         class_lower = doc_class.lower()
         sufix = ""
         for main_class in POSSIBLE_DOC_CLASSES:
-            if class_lower.startswith(main_class):
+            if f"{class_lower}_".startswith(f"{main_class}_"):
                 sufix = main_class
                 break
 
@@ -131,7 +132,7 @@ class DocumentImage:
             if sufix == "" or returnValue == False:
                 continue
             returnValue = True
-            if not element_name.startswith(sufix) and not element_name.endswith(sufix):
+            if not element_name.startswith(sufix+'_') and not element_name.endswith('_'+sufix):
                 returnValue = False
 
         if returnValue is None:
@@ -178,6 +179,9 @@ class DocumentImage:
             possibleAngle = vc_img_process.adjustAngle( - possibleAngle )
             return possibleAngle
 
+        if classToAlign != "cnh":
+            return 0
+
         # If possibleAngle is None, then we'll reach this point of program, 
         # and it means that it wasn't possible to align the image by pair of fields
         # so we have to find the rotation angle by other ways
@@ -195,7 +199,7 @@ class DocumentImage:
             if self.workImage is None:
                 self.workImage = self.originalImage
                 self.rotationAngle = 0
-                needs_scale = self.documentClassIs(['cnh','cnh_frente','rg_frente'])
+                needs_scale = self.documentClassIs(['cnh','rg_verso','rg2'])
                 if needs_scale:
                     self.timers.startClock('yolo.shrink')
                     self.scale, doc_resized = vc_img_process.shrinkToWidth(
@@ -259,9 +263,9 @@ class DocumentImage:
             resultlist = self.resultJSON[vc_constants.FIELD_RESULT_LIST]
 
             doc_type = ''
-            if self.documentClassIs(['cnh','cnh_frente']):
+            if self.documentClassIs(['cnh']):
                 doc_type = 'cnh'
-            elif self.documentClassIs(['rg_frente','rg_verso']):
+            elif self.documentClassIs(['rg','rg2']):
                 doc_type = 'rg'
 
             for n in range(len(resultlist)):
@@ -314,8 +318,7 @@ class DocumentImage:
             if obj_name.startswith('local_emissao'):   return vc_fields.CnhCityField()
             if obj_name.startswith('data_emissao'):    return vc_fields.CnhDateField()
             if obj_name.startswith('cnh'):             return vc_fields.CnhField()
-            if obj_name.startswith('cnh_frente'):      return vc_fields.CnhField()
-            if obj_name.startswith('observ'):          return vc_fields.CnhMultilineField()
+            if obj_name.startswith('observacao'):      return vc_fields.CnhMultilineField()
             if obj_name.startswith('categoria'):       return vc_fields.CnhCategoryField()
         if doc_type == 'rg':
             if obj_name.startswith('nome'):            return vc_fields.RgNameField()
@@ -328,8 +331,11 @@ class DocumentImage:
             if obj_name.startswith('nascimento'):      return vc_fields.RgDateField()
             if obj_name.startswith('doc_origem'):      return vc_fields.RgMultilineField()
             if obj_name.startswith('cpf'):             return vc_fields.RgCpfField()
+            if obj_name.startswith('cabecalho'):       return vc_fields.RgMultilineField()
             if obj_name.startswith('rg_verso'):        return vc_fields.RgField()
             if obj_name.startswith('rg_frente'):       return vc_fields.RgField()
+            if obj_name.startswith('rg2_verso'):       return vc_fields.RgField()
+            if obj_name.startswith('rg2_frente'):      return vc_fields.RgField()
         return vc_fields.ExtractedField()
 
     # ----------------------------------------------------------------

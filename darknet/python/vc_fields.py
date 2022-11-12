@@ -28,6 +28,7 @@ class ExtractedField:
         self.isCPF = False
         self.isFiliation = False
         self.fieldCroppedImage = None
+        self.useDeskew = False
         self.fieldDeskewedImage = None
         self.preprocessingKind = None
         self.ocrKind = None
@@ -51,7 +52,7 @@ class ExtractedField:
     def setParameters(self, field_name=None,
     crop_height=None, ocr_kind=None, preprocessing_kind=None,
     is_multiline_field=None, is_nonvalue_field=None,
-    is_numeric=None, is_cpf=None, is_filiation=None):
+    is_numeric=None, is_cpf=None, is_filiation=None, use_deskew=None):
         if field_name is not None:         self.fieldName = field_name.lower()
         if is_multiline_field is not None: self.isMultilineField = is_multiline_field
         if is_nonvalue_field is not None:  self.isNonValueField = is_nonvalue_field
@@ -60,6 +61,7 @@ class ExtractedField:
         if is_filiation is not None:       self.isFiliation = is_filiation
         if crop_height is not None:        self.cropHeight = crop_height
         if ocr_kind is not None:           self.ocrKind,_ = vc_ocr.availableOcrEngine(ocr_kind)
+        if use_deskew is not None:         self.useDeskew = use_deskew
 
         # Para setar o valor do atributo preprocessingKind, temos as seguintes situações:
         # (Não confundir o parâmetro preprocessing_kind - underline - e o atributo preprocessingKind - camel case)
@@ -111,6 +113,8 @@ class ExtractedField:
         return self.fieldCroppedImage
 
     def getDeskewedImage(self):
+        if not self.useDeskew:
+            return self.getCroppedImage()
         if self.fieldDeskewedImage is None:
             _, self.fieldDeskewedImage = vc_img_process.deskew(self.getCroppedImage())
         return self.fieldDeskewedImage
@@ -199,7 +203,9 @@ class ExtractedField:
 # =================================================
 
 class CnhField(ExtractedField):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.setParameters(use_deskew=True)
 
 # ------------------------------ Text Field
 class CnhTextField(CnhField):
@@ -345,7 +351,9 @@ class CnhCategoryField(CnhFineTextField):
 # =================================================
 
 class RgField(ExtractedField):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.setParameters(preprocessing_kind=0)
 
 # ------------------------------ Text Field
 class RgTextField(RgField):
