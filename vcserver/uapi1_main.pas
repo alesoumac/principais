@@ -120,6 +120,7 @@ type
     function CreateJsonFromValores : string;
     procedure ClearGrid;
     function FindGridRow(Chave : string) : integer;
+    function FindGridValue(Chave : string) : string;
   public
   end;
 
@@ -443,6 +444,16 @@ begin
   Result := -1;
 end;
 
+function TfrmMain.FindGridValue(Chave : string) : string;
+var
+  KeyInd : integer;
+begin
+  KeyInd := FindGridRow(Chave);
+  if KeyInd > 0
+  then
+    Result := grdValores.Cells[4,KeyInd];
+end;
+
 procedure TfrmMain.AddLine(Dados: TJSONData; Key : string);
 var
   V : string;
@@ -527,7 +538,7 @@ var
   i : integer;
   OldCursor : TCursor;
   HTTPSock : TFPHttpClient;
-  IsCNH,IsRG,TemCampoCNHVerso : Boolean;
+  IsCNH,IsRG,IsRG2,TemCampoCNHVerso : Boolean;
   BMP : TBitmap;
   TipoDoc,Chave : string;
   KeyInd,NumMatch : integer;
@@ -540,6 +551,7 @@ var
   begin
     IsCNH := False;
     IsRG := False;
+    IsRG2 := False;
     TemCampoCNHVerso := False;
     for i := 0 to RL.Count-1 do
     begin
@@ -548,29 +560,39 @@ var
       if (LowerCase(LeftStr(ObjName,3)) = 'cnh')
       or (LowerCase(RightStr(ObjName,3)) = 'cnh')
       then
-        IsCNH := True;
+        IsCNH := True
+      else
+      if (LowerCase(LeftStr(ObjName,3)) = 'rg2')
+      or (LowerCase(RightStr(ObjName,3)) = 'rg2')
+      then
+        IsRG2 := True
+      else
       if (LowerCase(LeftStr(ObjName,2)) = 'rg')
       or (LowerCase(RightStr(ObjName,2)) = 'rg')
       then
         IsRG := True;
       if (LowerCase(ObjName) = 'local_emissao_cnh')
       or (LowerCase(ObjName) = 'data_emissao_cnh')
+      or (LowerCase(ObjName) = 'observacao_cnh')
       then
         TemCampoCNHVerso := True;
+      if IsRG or IsRG2 then break;
     end;
-    if IsCNH <> IsRG
+
+    if IsCNH
     then begin
-      if IsCNH
-      then begin
-        if TemCampoCNHVerso
-        then
-          grpDoc.ItemIndex := 1
-        else
-          grpDoc.ItemIndex := 2;
-      end
+      if TemCampoCNHVerso
+      then
+        grpDoc.ItemIndex := 1
       else
-        grpDoc.ItemIndex := 3;
-    end;
+        grpDoc.ItemIndex := 2;
+    end
+    else
+      if IsRG
+      then
+        grpDoc.ItemIndex := 3
+      else
+        grpDoc.ItemIndex := 4;
   end;
 
 begin
@@ -643,9 +665,24 @@ begin
                   VerifiqueTipoDocFromRL;
                 end
                 else begin
+                  if LowerCase(TipoDoc) = 'rg'
+                  then begin
+                    if (GetNodeJSON(Valores,'nome_rg2') <> nil)
+                    or (GetNodeJSON(Valores,'filiacao_rg2') <> nil)
+                    or (GetNodeJSON(Valores,'nascimento_rg2') <> nil)
+                    or (GetNodeJSON(Valores,'naturalidade_rg2') <> nil)
+                    or (GetNodeJSON(Valores,'cpf_rg2') <> nil)
+                    or (GetNodeJSON(Valores,'registro_geral_rg2') <> nil)
+                    or (GetNodeJSON(Valores,'cabecalho_rg2') <> nil)
+                    or (GetNodeJSON(Valores,'rg2_frente') <> nil)
+                    or (GetNodeJSON(Valores,'rg2_verso') <> nil)
+                    then
+                      TipoDoc := 'rg2';
+                  end;
                   if LowerCase(TipoDoc) = 'cnh' then grpDoc.ItemIndex := 1
                   else if LowerCase(TipoDoc) = 'cnh_frente' then grpDoc.ItemIndex := 2
-                  else if LowerCase(LeftStr(TipoDoc,2)) = 'rg' then grpDoc.ItemIndex := 3
+                  else if LowerCase(TipoDoc) = 'rg' then grpDoc.ItemIndex := 3
+                  else if LowerCase(TipoDoc) = 'rg2' then grpDoc.ItemIndex := 4
                   else grpDoc.ItemIndex := 0;
                 end;
                 for i := 1 to grdValores.RowCount-1 do
@@ -977,37 +1014,58 @@ begin
 
     if (Items[ItemIndex] = 'CNH') or (Items[ItemIndex] = 'CNH Frente')
     then begin
-      grdValores.RowCount := 10;
-      grdValores.Cells[0,1] := 'nome_cnh';
-      grdValores.Cells[0,2] := 'identidade_cnh';
-      grdValores.Cells[0,3] := 'cpf_cnh';
-      grdValores.Cells[0,4] := 'nascimento_cnh';
-      grdValores.Cells[0,5] := 'filiacao_cnh';
-      grdValores.Cells[0,6] := 'categoria_cnh';
-      grdValores.Cells[0,7] := 'registro_cnh';
-      grdValores.Cells[0,8] := 'validade_cnh';
-      grdValores.Cells[0,9] := 'pri_habilitacao_cnh';
+      grdValores.RowCount := 11;
+      grdValores.Cells[0,1] := 'cnh_frente';
+      grdValores.Cells[0,2] := 'nome_cnh';
+      grdValores.Cells[0,3] := 'identidade_cnh';
+      grdValores.Cells[0,4] := 'cpf_cnh';
+      grdValores.Cells[0,5] := 'nascimento_cnh';
+      grdValores.Cells[0,6] := 'filiacao_cnh';
+      grdValores.Cells[0,7] := 'categoria_cnh';
+      grdValores.Cells[0,8] := 'registro_cnh';
+      grdValores.Cells[0,9] := 'validade_cnh';
+      grdValores.Cells[0,10] := 'pri_habilitacao_cnh';
 
-      if Items[ItemIndex] = 'cnh'
+      if Items[ItemIndex] = 'CNH'
       then begin
-        grdValores.RowCount := 13;
-        grdValores.Cells[0,10] := 'observacao_cnh';
-        grdValores.Cells[0,11] := 'local_emissao_cnh';
-        grdValores.Cells[0,12] := 'data_emissao_cnh';
+        grdValores.RowCount := 14;
+        grdValores.Cells[0,1] := 'cnh';
+        grdValores.Cells[0,11] := 'observacao_cnh';
+        grdValores.Cells[0,12] := 'local_emissao_cnh';
+        grdValores.Cells[0,13] := 'data_emissao_cnh';
       end;
     end;
     if Items[ItemIndex] = 'RG'
     then begin
-      grdValores.RowCount := 10;
-      grdValores.Cells[0,1] := 'nome_rg';
-      grdValores.Cells[0,2] := 'registro_geral_rg';
-      grdValores.Cells[0,3] := 'data_expedicao_rg';
-      grdValores.Cells[0,4] := 'filiacao_rg';
-      grdValores.Cells[0,5] := 'naturalidade_rg';
-      grdValores.Cells[0,6] := 'nascimento_rg';
-      grdValores.Cells[0,7] := 'doc_origem_rg';
-      grdValores.Cells[0,8] := 'cpf_rg';
-      grdValores.Cells[0,9] := 'cabecalho_rg';
+      grdValores.RowCount := 15;
+      grdValores.Cells[0,1] := 'rg_frente';
+      grdValores.Cells[0,2] := 'rg_verso';
+      grdValores.Cells[0,3] := 'nome_rg';
+      grdValores.Cells[0,4] := 'registro_geral_rg';
+      grdValores.Cells[0,5] := 'data_expedicao_rg';
+      grdValores.Cells[0,6] := 'filiacao_rg';
+      grdValores.Cells[0,7] := 'naturalidade_rg';
+      grdValores.Cells[0,8] := 'nascimento_rg';
+      grdValores.Cells[0,9] := 'doc_origem_rg';
+      grdValores.Cells[0,10] := 'cpf_rg';
+      grdValores.Cells[0,11] := 'cabecalho_rg';
+      grdValores.Cells[0,12] := 'foto_rg';
+      grdValores.Cells[0,13] := 'assinatura_rg';
+      grdValores.Cells[0,14] := 'digital_rg';
+    end;
+    if Items[ItemIndex] = 'RG2'
+    then begin
+      grdValores.RowCount := 11;
+      grdValores.Cells[0,1] := 'rg2_frente';
+      grdValores.Cells[0,2] := 'rg2_verso';
+      grdValores.Cells[0,3] := 'nome_rg2';
+      grdValores.Cells[0,4] := 'filiacao_rg2';
+      grdValores.Cells[0,5] := 'nascimento_rg2';
+      grdValores.Cells[0,6] := 'naturalidade_rg2';
+      grdValores.Cells[0,7] := 'cpf_rg2';
+      grdValores.Cells[0,8] := 'registro_geral_rg2';
+      grdValores.Cells[0,9] := 'cabecalho_rg2';
+      grdValores.Cells[0,10] := 'foto_rg';
     end;
   end;
 end;
@@ -1025,7 +1083,7 @@ end;
 
 procedure TfrmMain.lstArquivosChange(Sender: TObject);
 const
-  NUM_CHAVES = 29;
+  NUM_CHAVES = 39;
   chaves : array [1..NUM_CHAVES] of string = (
   'foto_cnh',
   'nome_cnh',
@@ -1055,10 +1113,20 @@ const
   'cnh_frente',
   'categoria_cnh',
   'observacao_cnh',
-  'cabecalho_rg'
+  'rg2_frente',
+  'rg2_verso',
+  'foto_rg2',
+  'nome_rg2',
+  'filiacao_rg2',
+  'nascimento_rg2',
+  'naturalidade_rg2',
+  'cpf_rg2',
+  'registro_geral_rg2',
+  'cabecalho_rg',
+  'cabecalho_rg2'
   );
 var
-  IsCNH, IsRG, TemCampoCNHVerso : Boolean;
+  IsCNH, IsRG, IsRG2, TemCampoCNHVerso : Boolean;
   TipoDoc,ObjName : string;
   i : integer;
 begin
@@ -1083,6 +1151,7 @@ begin
       then begin
         IsCNH := False;
         IsRG := False;
+        IsRG2 := False;
         TemCampoCNHVerso := False;
         for i := 1 to NUM_CHAVES do
         begin
@@ -1091,7 +1160,13 @@ begin
           if (LowerCase(LeftStr(ObjName,3)) = 'cnh')
           or (LowerCase(RightStr(ObjName,3)) = 'cnh')
           then
-            IsCNH := True;
+            IsCNH := True
+          else
+          if (LowerCase(LeftStr(ObjName,3)) = 'rg2')
+          or (LowerCase(RightStr(ObjName,3)) = 'rg2')
+          then
+            IsRG2 := True
+          else
           if (LowerCase(LeftStr(ObjName,2)) = 'rg')
           or (LowerCase(RightStr(ObjName,2)) = 'rg')
           then
@@ -1100,23 +1175,42 @@ begin
           or (LowerCase(ObjName) = 'data_emissao_cnh')
           then
             TemCampoCNHVerso := True;
+          if IsRG or IsRG2 then break;
         end;
-        if IsCNH <> IsRG
+        if IsCNH
         then begin
-          if IsCNH
-          then begin
-            if TemCampoCNHVerso
-            then grpDoc.ItemIndex := 1
-            else grpDoc.ItemIndex := 2;
-          end
+          if TemCampoCNHVerso
+          then
+            grpDoc.ItemIndex := 1
           else
-            grpDoc.ItemIndex := 3;
-        end;
+            grpDoc.ItemIndex := 2;
+        end
+        else
+          if IsRG
+          then
+            grpDoc.ItemIndex := 3
+          else
+            grpDoc.ItemIndex := 4;
       end
       else begin
+        if LowerCase(TipoDoc) = 'rg'
+        then begin
+          if (GetNodeJSON(Valores,'nome_rg2') <> nil)
+          or (GetNodeJSON(Valores,'filiacao_rg2') <> nil)
+          or (GetNodeJSON(Valores,'nascimento_rg2') <> nil)
+          or (GetNodeJSON(Valores,'naturalidade_rg2') <> nil)
+          or (GetNodeJSON(Valores,'cpf_rg2') <> nil)
+          or (GetNodeJSON(Valores,'registro_geral_rg2') <> nil)
+          or (GetNodeJSON(Valores,'cabecalho_rg2') <> nil)
+          or (GetNodeJSON(Valores,'rg2_frente') <> nil)
+          or (GetNodeJSON(Valores,'rg2_verso') <> nil)
+          then
+            TipoDoc := 'rg2';
+        end;
         if LowerCase(TipoDoc) = 'cnh' then grpDoc.ItemIndex := 1
         else if LowerCase(TipoDoc) = 'cnh_frente' then grpDoc.ItemIndex := 2
-        else if LowerCase(LeftStr(TipoDoc,2)) = 'rg' then grpDoc.ItemIndex := 3
+        else if LowerCase(TipoDoc) = 'rg' then grpDoc.ItemIndex := 3
+        else if LowerCase(TipoDoc) = 'rg2' then grpDoc.ItemIndex := 4
         else grpDoc.ItemIndex := 0;
       end;
       for i := 1 to grdValores.RowCount-1 do
@@ -1141,13 +1235,13 @@ var
   TipoDoc,J,Chave,V : string;
   i : integer;
   json : TJSONData;
+  useRGfrente, useRGverso, useRG2frente, useRG2verso : boolean;
 begin
   case grpDoc.ItemIndex of
   1: TipoDoc := 'cnh';
   2: TipoDoc := 'cnh_frente';
-  3: if FindGridRow('rg_frente') >= 0 then TipoDoc := 'rg_frente'
-     else if FindGridRow('rg_verso') >= 0 then TipoDoc := 'rg_verso'
-     else TipoDoc := 'rg';
+  3: TipoDoc := 'rg';
+  4: TipoDoc := 'rg2';
   else TipoDoc := 'outros';
   end;
   if TipoDoc = 'outros'
@@ -1156,15 +1250,37 @@ begin
     Exit;
   end;
   J := '{"tipo_doc": "' + TipoDoc + '"';
+
+  useRGfrente := FindGridValue('cabecalho_rg') <> '';
+  useRG2frente := FindGridValue('cabecalho_rg2') <> '';
+  useRGverso := FindGridValue('registro_geral_rg') <> '';
+  useRG2verso := FindGridValue('registro_geral_rg2') <> '';
+
   for i := 1 to grdValores.RowCount - 1 do
   begin
     Chave := grdValores.Cells[0,i];
-    if (TipoDoc = 'rg_frente')
+    if useRGfrente
     and (
       (Chave = 'rg_frente') or
       (Chave = 'foto_rg') or
       (Chave = 'assinatura_rg') or
       (Chave = 'digital_rg')
+      )
+    then else
+    if useRG2frente
+    and (
+      (Chave = 'rg2_frente') or
+      (Chave = 'foto_rg2')
+      )
+    then else
+    if useRGverso
+    and (
+      (Chave = 'rg_verso')
+      )
+    then else
+    if useRG2verso
+    and (
+      (Chave = 'rg2_verso')
       )
     then else
     if (TipoDoc = 'cnh_frente')

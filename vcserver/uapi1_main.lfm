@@ -5,29 +5,29 @@ object frmMain: TfrmMain
   Width = 1113
   ActiveControl = panImagem
   Caption = 'VCDOC Server Tests'
-  ClientHeight = 656
+  ClientHeight = 651
   ClientWidth = 1113
   Menu = MNU
   OnActivate = FormActivate
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  LCLVersion = '2.2.2.0'
+  LCLVersion = '2.2.4.0'
   object panImagem: TPanel
     Left = 0
-    Height = 656
+    Height = 651
     Top = 0
     Width = 491
     Align = alLeft
     BevelOuter = bvNone
     BorderWidth = 4
-    ClientHeight = 656
+    ClientHeight = 651
     ClientWidth = 491
     TabOrder = 0
     object IMG: TImage
       Left = 4
-      Height = 336
-      Top = 301
+      Height = 321
+      Top = 309
       Width = 483
       Align = alClient
       AutoSize = True
@@ -442,7 +442,7 @@ object frmMain: TfrmMain
     object lstArquivos: TFileListBox
       Left = 4
       Height = 253
-      Top = 42
+      Top = 50
       Width = 483
       Align = alTop
       Directory = '/home/am'
@@ -450,12 +450,13 @@ object frmMain: TfrmMain
       Mask = '*.jp*;*.png;*.bmp;*.wsq;*.tif*'
       OnChange = lstArquivosChange
       TabOrder = 1
+      TopIndex = -1
     end
     object splArquivos: TSplitter
       Cursor = crVSplit
       Left = 4
       Height = 6
-      Top = 295
+      Top = 303
       Width = 483
       Align = alTop
       OnChangeBounds = splArquivosChangeBounds
@@ -463,7 +464,7 @@ object frmMain: TfrmMain
     end
     object lblArquivos: TLabel
       Left = 4
-      Height = 15
+      Height = 17
       Top = 4
       Width = 483
       Align = alTop
@@ -472,8 +473,8 @@ object frmMain: TfrmMain
     end
     object edtDir: TDirectoryEdit
       Left = 4
-      Height = 23
-      Top = 19
+      Height = 29
+      Top = 21
       Width = 483
       Directory = '~'
       ShowHidden = False
@@ -487,8 +488,8 @@ object frmMain: TfrmMain
     end
     object Label1: TLabel
       Left = 4
-      Height = 15
-      Top = 637
+      Height = 17
+      Top = 630
       Width = 483
       Align = alBottom
       Caption = '...'
@@ -497,36 +498,36 @@ object frmMain: TfrmMain
   end
   object splLeft: TSplitter
     Left = 491
-    Height = 656
+    Height = 651
     Top = 0
     Width = 6
     OnChangeBounds = splLeftChangeBounds
   end
   object panInfos: TPanel
     Left = 497
-    Height = 656
+    Height = 651
     Top = 0
     Width = 616
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 656
+    ClientHeight = 651
     ClientWidth = 616
     ParentFont = False
     TabOrder = 2
     object panAcoes: TPanel
       Left = 0
-      Height = 416
+      Height = 411
       Top = 0
       Width = 616
       Align = alClient
       BevelOuter = bvNone
       BorderWidth = 3
-      ClientHeight = 416
+      ClientHeight = 411
       ClientWidth = 616
       TabOrder = 0
       object lblImagem: TLabel
         Left = 3
-        Height = 15
+        Height = 17
         Top = 54
         Width = 610
         Align = alTop
@@ -535,13 +536,13 @@ object frmMain: TfrmMain
       end
       object panBotoes: TPanel
         Left = 3
-        Height = 300
-        Top = 92
+        Height = 288
+        Top = 100
         Width = 200
         Align = alLeft
         BevelOuter = bvNone
         BorderWidth = 4
-        ClientHeight = 300
+        ClientHeight = 288
         ClientWidth = 200
         TabOrder = 2
         object btnDetect: TButton
@@ -566,7 +567,7 @@ object frmMain: TfrmMain
         end
         object edtMaxLarg: TEdit
           Left = 94
-          Height = 23
+          Height = 29
           Top = 319
           Width = 91
           OnEditingDone = edtMaxLargEditingDone
@@ -574,24 +575,24 @@ object frmMain: TfrmMain
         end
         object lblMaxLarg: TLabel
           Left = 14
-          Height = 15
+          Height = 17
           Top = 319
-          Width = 55
+          Width = 60
           Caption = 'Máx. Larg.'
           ParentColor = False
         end
         object chkResizing: TCheckBox
           Left = 14
-          Height = 19
+          Height = 23
           Top = 279
-          Width = 85
+          Width = 100
           Caption = 'Use Resizing'
           OnChange = chkResizingChange
           TabOrder = 3
         end
         object grpDoc: TRadioGroup
           Left = 4
-          Height = 132
+          Height = 140
           Top = 68
           Width = 192
           Align = alTop
@@ -604,22 +605,23 @@ object frmMain: TfrmMain
           ChildSizing.ShrinkVertical = crsScaleChilds
           ChildSizing.Layout = cclLeftToRightThenTopToBottom
           ChildSizing.ControlsPerLine = 1
-          ClientHeight = 112
-          ClientWidth = 188
+          ClientHeight = 122
+          ClientWidth = 190
           Items.Strings = (
             '-- Nenhum --'
             'CNH'
             'CNH Frente'
             'RG'
+            'RG2'
           )
           OnClick = grpDocClick
           TabOrder = 2
         end
         object chkRotation: TCheckBox
           Left = 14
-          Height = 19
+          Height = 23
           Top = 232
-          Width = 87
+          Width = 103
           Caption = 'Use Rotation'
           OnChange = chkResizingChange
           TabOrder = 5
@@ -627,8 +629,8 @@ object frmMain: TfrmMain
       end
       object edtImagem: TEdit
         Left = 3
-        Height = 23
-        Top = 69
+        Height = 29
+        Top = 71
         Width = 610
         Align = alTop
         ReadOnly = True
@@ -636,8 +638,8 @@ object frmMain: TfrmMain
       end
       object grdValores: TStringGrid
         Left = 203
-        Height = 300
-        Top = 92
+        Height = 288
+        Top = 100
         Width = 410
         Align = alClient
         FixedCols = 4
@@ -658,8 +660,8 @@ object frmMain: TfrmMain
       end
       object lblPercentMatch: TLabel
         Left = 3
-        Height = 21
-        Top = 392
+        Height = 20
+        Top = 388
         Width = 610
         Align = alBottom
         Alignment = taRightJustify
@@ -697,7 +699,7 @@ object frmMain: TfrmMain
         end
         object lblBaseAddress: TLabel
           Left = 1
-          Height = 15
+          Height = 17
           Top = 30
           Width = 608
           Align = alTop
@@ -715,7 +717,7 @@ object frmMain: TfrmMain
       Cursor = crVSplit
       Left = 0
       Height = 6
-      Top = 416
+      Top = 411
       Width = 616
       Align = alBottom
       OnChangeBounds = splTopChangeBounds
@@ -724,7 +726,7 @@ object frmMain: TfrmMain
     object panJSON: TPanel
       Left = 0
       Height = 234
-      Top = 422
+      Top = 417
       Width = 616
       Align = alBottom
       BevelOuter = bvNone
@@ -734,8 +736,8 @@ object frmMain: TfrmMain
       TabOrder = 2
       object lblJSON: TLabel
         Left = 5
-        Height = 15
-        Top = 42
+        Height = 17
+        Top = 41
         Width = 606
         Align = alTop
         Caption = 'JSON Retornado:'
@@ -743,8 +745,8 @@ object frmMain: TfrmMain
       end
       object memJSON: TMemo
         Left = 5
-        Height = 172
-        Top = 57
+        Height = 171
+        Top = 58
         Width = 606
         Align = alClient
         ReadOnly = True
@@ -753,7 +755,7 @@ object frmMain: TfrmMain
       end
       object lblStatus: TLabel
         Left = 5
-        Height = 25
+        Height = 24
         Top = 5
         Width = 606
         Align = alTop
@@ -766,7 +768,7 @@ object frmMain: TfrmMain
       object Bevel1: TBevel
         Left = 5
         Height = 4
-        Top = 34
+        Top = 33
         Width = 606
         Align = alTop
         BorderSpacing.Top = 4
