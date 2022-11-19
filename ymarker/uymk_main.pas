@@ -353,8 +353,9 @@ begin
   if S = '^¬38' then mnuMoveFastUpClick(Sender)    else
   if S = '^¬39' then mnuMoveFastRightClick(Sender) else
   if S = '^¬40' then mnuMoveFastDownClick(Sender)  else
-  ;
+  Exit;
 
+  Key := 0;
 end;
 
 procedure TfrmYoloMarker.lstFilesChange(Sender: TObject);

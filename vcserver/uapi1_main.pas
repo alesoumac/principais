@@ -660,12 +660,13 @@ begin
               end
               else begin
                 TipoDoc := GetValueJSON(Valores,'tipo_doc');
+                TipoDoc := LowerCase(TipoDoc);
                 if TipoDoc = ''
                 then begin
                   VerifiqueTipoDocFromRL;
                 end
                 else begin
-                  if LowerCase(TipoDoc) = 'rg'
+                  if TipoDoc = 'rg'
                   then begin
                     if (GetNodeJSON(Valores,'nome_rg2') <> nil)
                     or (GetNodeJSON(Valores,'filiacao_rg2') <> nil)
@@ -679,10 +680,10 @@ begin
                     then
                       TipoDoc := 'rg2';
                   end;
-                  if LowerCase(TipoDoc) = 'cnh' then grpDoc.ItemIndex := 1
-                  else if LowerCase(TipoDoc) = 'cnh_frente' then grpDoc.ItemIndex := 2
-                  else if LowerCase(TipoDoc) = 'rg' then grpDoc.ItemIndex := 3
-                  else if LowerCase(TipoDoc) = 'rg2' then grpDoc.ItemIndex := 4
+                  if TipoDoc = 'cnh' then grpDoc.ItemIndex := 1
+                  else if TipoDoc = 'cnh_frente' then grpDoc.ItemIndex := 2
+                  else if TipoDoc = 'rg' then grpDoc.ItemIndex := 3
+                  else if TipoDoc = 'rg2' then grpDoc.ItemIndex := 4
                   else grpDoc.ItemIndex := 0;
                 end;
                 for i := 1 to grdValores.RowCount-1 do
@@ -1147,6 +1148,7 @@ begin
     if GetJsonValores(lstArquivos.FileName,Valores)
     then begin
       TipoDoc := GetValueJSON(Valores,'tipo_doc');
+      TipoDoc := LowerCase(TipoDoc);
       if TipoDoc = ''
       then begin
         IsCNH := False;
@@ -1193,7 +1195,7 @@ begin
             grpDoc.ItemIndex := 4;
       end
       else begin
-        if LowerCase(TipoDoc) = 'rg'
+        if TipoDoc = 'rg'
         then begin
           if (GetNodeJSON(Valores,'nome_rg2') <> nil)
           or (GetNodeJSON(Valores,'filiacao_rg2') <> nil)
@@ -1207,10 +1209,10 @@ begin
           then
             TipoDoc := 'rg2';
         end;
-        if LowerCase(TipoDoc) = 'cnh' then grpDoc.ItemIndex := 1
-        else if LowerCase(TipoDoc) = 'cnh_frente' then grpDoc.ItemIndex := 2
-        else if LowerCase(TipoDoc) = 'rg' then grpDoc.ItemIndex := 3
-        else if LowerCase(TipoDoc) = 'rg2' then grpDoc.ItemIndex := 4
+        if TipoDoc = 'cnh' then grpDoc.ItemIndex := 1
+        else if TipoDoc = 'cnh_frente' then grpDoc.ItemIndex := 2
+        else if TipoDoc = 'rg' then grpDoc.ItemIndex := 3
+        else if TipoDoc = 'rg2' then grpDoc.ItemIndex := 4
         else grpDoc.ItemIndex := 0;
       end;
       for i := 1 to grdValores.RowCount-1 do
@@ -1275,12 +1277,14 @@ begin
     then else
     if useRGverso
     and (
-      (Chave = 'rg_verso')
+      (Chave = 'rg_verso') or
+      (Chave = 'cpf_rg')
       )
     then else
     if useRG2verso
     and (
-      (Chave = 'rg2_verso')
+      (Chave = 'rg2_verso') or
+      (Chave = 'cpf_rg2')
       )
     then else
     if (TipoDoc = 'cnh_frente')
