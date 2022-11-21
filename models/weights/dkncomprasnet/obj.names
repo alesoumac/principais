@@ -5,7 +5,9 @@ rg1_frente
 rg1_verso
 rg2_frente
 rg2_verso
-oab
-cart_trabalho_rosto
 cart_trabalho_folhas
-reg_migratorio
+cart_trabalho_rosto
+reg_migratorio_frente
+reg_migratorio_verso
+oab_frente
+oab_verso
