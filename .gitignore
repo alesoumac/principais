@@ -3,3 +3,6 @@
 haar*
 *.prototxt
 *.caffemodel
+ymarker/lib/
+ymarker/backup/
+ymarker/ymarker

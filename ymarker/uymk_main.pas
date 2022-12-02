@@ -199,6 +199,108 @@ implementation
 
 {$R *.lfm}
 
+
+
+(*
+def convertBaseToRect(base, trim = False):
+    dicRects = {}
+    for k in base:
+        x,y,w,h = base[k]
+
+        x1 = x - w/2.0
+        y1 = y - h/2.0
+        x2 = x + w/2.0
+        y2 = y + h/2.0
+
+        if trim:
+            if x1 >= 1 or y1 >= 1 or x2 <= 0 or y2 <= 0:
+                continue
+            if x1 < 0: x1 = 0.0
+            if y1 < 0: y1 = 0.0
+            if x2 > 1: x2 = 1.0
+            if y2 > 1: y2 = 1.0
+
+        dicRects[k] = (x1,y1,x2,y2)
+
+    return dicRects
+
+def convertRectToBase(rect, trim = False):
+    dicBase = {}
+    for k in rect:
+        x1,y1,x2,y2 = rect[k]
+        if trim:
+            if x1 >= 1 or y1 >= 1 or x2 <= 0 or y2 <= 0:
+                continue
+            if x1 < 0: x1 = 0.0
+            if y1 < 0: y1 = 0.0
+            if x2 > 1: x2 = 1.0
+            if y2 > 1: y2 = 1.0
+
+        w = x2 - x1
+        h = y2 - y1
+        x = (x2 + x1) / 2.0
+        y = (y2 + y1) / 2.0
+
+        dicBase[k] = (x,y,w,h)
+
+    return dicBase
+
+def calculeNovaBase(baseInicial,chaveNova,baseCoordNova):
+    if chaveNova not in baseInicial:
+        return {chaveNova: baseCoordNova}
+
+    rectNovo = {}
+
+    try:
+        rectInicial = convertBaseToRect(baseInicial)
+
+        xbn,ybn,wbn,hbn = baseCoordNova
+        xbi,ybi,wbi,hbi = baseInicial[chaveNova]
+
+        x1bn,y1bn,x2bn,y2bn = xbn-wbn/2.0 , ybn-hbn/2.0 , xbn+wbn/2.0 , ybn+hbn/2.0
+        x1bi,y1bi,x2bi,y2bi = rectInicial[chaveNova]
+
+
+        for k in baseInicial:
+            if k == chaveNova:
+                rectNovo[k] = (0,0,1,1)
+                continue
+
+            try:
+                x1ki,y1ki,x2ki,y2ki = rectInicial[k]
+                wki = x2ki-x1ki
+                hki = y2ki-y1ki
+                x1 = min(x1ki,x1bi)
+                y1 = min(y1ki,y1bi)
+                x2 = max(x2ki,x2bi)
+                y2 = max(y2ki,y2bi)
+                w = x2-x1
+                h = y2-y1
+
+                wn = w * wbn / wbi
+                hn = h * hbn / hbi
+                x1n = x1bn - (x1bi-x1)/w * wn
+                y1n = y1bn - (y1bi-y1)/h * hn
+                x2n = x1n + wn
+                y2n = y1n + hn
+
+                wkn = wn * wki / w
+                hkn = hn * hki / h
+                x1kn = x1n + (x1ki-x1)/w * wn
+                y1kn = y1n + (y1ki-y1)/h * hn
+                x2kn = x1kn + wkn
+                y2kn = y1kn + hkn
+
+                rectNovo[k] = (x1kn,y1kn,x2kn,y2kn)
+            except:
+                pass
+    except:
+        pass
+    baseNova = convertRectToBase(rectNovo,True)
+    baseNova[chaveNova] = baseCoordNova
+    return baseNova
+*)
+
 { TfrmYoloMarker }
 procedure SplitString(SplitChar : char; var S : string; var Initial : string);
 var
@@ -211,6 +313,7 @@ begin
   S := Trim(Copy(S,p+1,Length(S)));
 end;
 
+// procedure StrToBase(S : string; var x,y,w,h : Floa
 
 procedure TfrmYoloMarker.edtImageDirChange(Sender: TObject);
 var
