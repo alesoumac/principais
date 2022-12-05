@@ -11,7 +11,7 @@ object frmYoloMarker: TfrmYoloMarker
   OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
-  LCLVersion = '2.2.0.4'
+  LCLVersion = '2.2.4.0'
   WindowState = wsMaximized
   object panClient: TPanel
     Left = 336
@@ -4339,10 +4339,11 @@ object frmYoloMarker: TfrmYoloMarker
           Left = 16
           Height = 17
           Top = 64
-          Width = 20
+          Width = 15
           Caption = '.....'
           Color = clFuchsia
           Font.Color = clWhite
+          ParentColor = False
           ParentFont = False
           Transparent = False
           Visible = False
@@ -5035,7 +5036,7 @@ object frmYoloMarker: TfrmYoloMarker
     TabOrder = 2
     object edtImageDir: TDirectoryEdit
       Left = 7
-      Height = 34
+      Height = 29
       Top = 41
       Width = 1043
       ShowHidden = False
@@ -5056,6 +5057,7 @@ object frmYoloMarker: TfrmYoloMarker
       Alignment = taRightJustify
       Caption = 'Yolo Marker - Release 2'
       Font.Style = [fsBold]
+      ParentColor = False
       ParentFont = False
     end
     object lblSelectImgDir: TLabel
@@ -5065,19 +5067,21 @@ object frmYoloMarker: TfrmYoloMarker
       Width = 1043
       Align = alTop
       Caption = 'Select images directory:'
+      ParentColor = False
     end
     object lblSelectObjNameFile: TLabel
       Left = 7
       Height = 17
-      Top = 75
+      Top = 70
       Width = 1043
       Align = alTop
       Caption = 'Select object names file:'
+      ParentColor = False
     end
     object edtObjName: TFileNameEdit
       Left = 7
-      Height = 34
-      Top = 92
+      Height = 29
+      Top = 87
       Width = 1043
       FilterIndex = 0
       HideDirectories = False
@@ -5207,8 +5211,9 @@ object frmYoloMarker: TfrmYoloMarker
       Left = 10
       Height = 17
       Top = 10
-      Width = 45
+      Width = 39
       Caption = 'Label1'
+      ParentColor = False
     end
     object Label2: TLabel
       Left = 1
@@ -5218,6 +5223,7 @@ object frmYoloMarker: TfrmYoloMarker
       Align = alBottom
       AutoSize = False
       Caption = 'Tags Editor:'
+      ParentColor = False
     end
   end
   object tmrFileChanged: TTimer

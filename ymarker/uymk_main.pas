@@ -313,7 +313,88 @@ begin
   S := Trim(Copy(S,p+1,Length(S)));
 end;
 
-// procedure StrToBase(S : string; var x,y,w,h : Floa
+function MyStrToFloat(S : string; ValorDefault : Extended) : Extended;
+begin
+  if DefaultFormatSettings.DecimalSeparator = ','
+  then
+    S := StringReplace(S,'.',',',[rfReplaceAll]);
+  Result := StrToFloatDef(S,ValorDefault);
+end;
+
+function MyFloatToStr(N : Extended) : string;
+var
+  S : string;
+begin
+  S := FormatFloat('0.00000000',N);
+  if DefaultFormatSettings.DecimalSeparator = ','
+  then
+    S := StringReplace(S,',','.',[rfReplaceAll]);
+  Result := S;
+end;
+
+function StrToBase(S : string;
+  var num_classe : integer;
+  var x : Extended;
+  var y : Extended;
+  var w : Extended;
+  var h : Extended) : boolean;
+
+var
+  N_partes : integer;
+  parte : string;
+  S_partes : array [1..5] of string;
+
+begin
+  N_partes := 0;
+  while (N_partes < 5) and (S <> '') do
+  begin
+    Inc(N_partes);
+    SplitString(' ',S,parte);
+    S_partes[N_partes] := parte;
+  end;
+  Result := False;
+  if N_partes = 5
+  then begin
+    num_classe := StrToIntDef(S_partes[1],-1);
+    x := MyStrToFloat(S_partes[2],-10000);
+    y := MyStrToFloat(S_partes[3],-10000);
+    w := MyStrToFloat(S_partes[4],-10000);
+    h := MyStrToFloat(S_partes[5],-10000);
+    Result := (num_classe >= 0)
+              and (x <> -10000)
+              and (y <> -10000)
+              and (w <> -10000)
+              and (h <> -10000)
+              ;
+  end
+  else if N_partes = 4
+  then begin
+    num_classe := -1;
+    x := MyStrToFloat(S_partes[1],-10000);
+    y := MyStrToFloat(S_partes[2],-10000);
+    w := MyStrToFloat(S_partes[3],-10000);
+    h := MyStrToFloat(S_partes[4],-10000);
+    Result := (x <> -10000)
+              and (y <> -10000)
+              and (w <> -10000)
+              and (h <> -10000)
+              ;
+  end;
+end;
+
+function BaseToStr(X,Y,W,H : Extended) : string;
+begin
+  Result := MyFloatToStr(X)
+         + ' ' + MyFloatToStr(Y)
+         + ' ' + MyFloatToStr(W)
+         + ' ' + MyFloatToStr(H)
+         ;
+end;
+
+function BaseToStr(NumClasse : integer; X,Y,W,H : Extended) : string;
+begin
+  Result := IntToStr(NumClasse) + ' ' + BaseToStr(X,Y,W,H);
+end;
 
 procedure TfrmYoloMarker.edtImageDirChange(Sender: TObject);
 var
@@ -548,9 +629,6 @@ begin
     ObjBox.SetBounds(ObjBox.Left, ObjBox.Top, ObjBox.Width + 1, ObjBox.Height);
 end;
 
-//if ObjBox.Width > 2 then ObjBox.SetBounds(ObjBox.Left+1,ObjBox.Top,ObjBox.Width-2,ObjBox.Height);
-//if ObjBox.Height > 2 then ObjBox.SetBounds(ObjBox.Left,ObjBox.Top+1,ObjBox.Width,ObjBox.Height-2);
-
 procedure TfrmYoloMarker.mnuMoveObjDownClick(Sender: TObject);
 begin
   if not ObjBox.Visible then Exit;
@@ -733,11 +811,7 @@ begin
   end;
   L := memObjects.Lines[idx];
   SplitString(' ',L,dummy);
-  L := dummy
-    + ' ' + FormatFloat('0.000000',px)
-    + ' ' + FormatFloat('0.000000',py)
-    + ' ' + FormatFloat('0.000000',pw)
-    + ' ' + FormatFloat('0.000000',ph);
+  L := dummy + ' ' + BaseToStr(px,py,pw,ph);
   memObjects.Lines[idx] := L;
 end;
 
@@ -1016,9 +1090,10 @@ end;
 procedure TfrmYoloMarker.BasicReadMarkers(FileName: string);
 var
   MarkFileName : string;
-  i,j : integer;
-  W,H : double;
-  L,dummy : string;
+  i : integer;
+  X,Y,W,H : Extended;
+  NumClasse : integer;
+  L : string;
   TxtRecognized : boolean;
   SaveMemoChange : TNotifyEvent;
 begin
@@ -1037,20 +1112,8 @@ begin
     begin
       L := memObjects.Lines[i];
       if L = '' then continue;
-      SplitString(' ',L,dummy);
-      if StrToIntDef(dummy,-100) = -100 then TxtRecognized := False;
-      W := 0;
-      H := 0;
-      for j := 1 to 4 do
-      begin
-        W := H;
-        SplitString(' ',L,dummy);
-        H := StrToFloatDef(dummy,-1000000);
-        if Round(H) = -1000000 then TxtRecognized := False;
-      end;
+      TxtRecognized := StrToBase(L,NumClasse,X,Y,W,H);
       if not TxtRecognized then Break;
-      //L := memObjects.Lines[i] + ' > ' + FloatToStr(W * H);
-      //memObjects.Lines[i] := L;
     end;
 
     if not TxtRecognized
@@ -1072,8 +1135,9 @@ procedure TfrmYoloMarker.BasicRecalculateShapes;
 var
   i,idx,classNumber,NewLeft,NewTop,NewWidth,NewHeight : integer;
   L,classNumberStr,objClassName,numberStr : string;
-  px,py,pw,ph : double;
+  px,py,pw,ph : Extended;
   sh : TShape;
+  linhaOk : boolean;
 begin
   ChangeBoxVisibility(False);
   lstObjects.Clear;
@@ -1087,29 +1151,14 @@ begin
   for i := 0 to memObjects.Lines.Count - 1 do
   begin
     L := memObjects.Lines[i];
-    SplitString(' ',L,classNumberStr);
-    classNumber := StrToIntDef(classNumberStr,-1);
+    linhaOk := StrToBase(L,classNumber,px,py,pw,ph);
     if (classNumber < 0) or (classNumber > lstObjectNames.Count-1)
     then
       objClassName := 'Unknown class "' + classNumberStr + '"'
     else
       objClassName := IntToStr(i+1) + ': ' + lstObjectNames.Items[classNumber];
 
-    SplitString(' ',L,numberStr);
-    px := StrToFloatDef(numberStr,-1);
-    if px < 0 then Continue;
-
-    SplitString(' ',L,numberStr);
-    py := StrToFloatDef(numberStr,-1);
-    if py < 0 then Continue;
-
-    SplitString(' ',L,numberStr);
-    pw := StrToFloatDef(numberStr,-1);
-    if pw < 0 then Continue;
-
-    SplitString(' ',L,numberStr);
-    ph := StrToFloatDef(numberStr,-1);
-    if ph < 0 then Continue;
+    if (px < 0) or (py < 0) or (pw < 0) or (ph < 0) then Continue;
 
     NewWidth  := Trunc(pw * panInnerImg.Width);
     NewHeight := Trunc(ph * panInnerImg.Height);
