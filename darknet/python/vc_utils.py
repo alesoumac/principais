@@ -142,14 +142,28 @@ def basicCompareRate(s,t,principal = None):
     if principal is None or principal == 1:
         numerador += mais_maior
         denominador += len(s)
-    
+    #
     if principal is None or principal == 2:
         numerador += mais_maior
         denominador += len(t)
-        
+    #   
     erro = len(t) + len(s) - 2*mais_maior
-
+    #
     return float(numerador) / float(denominador), erro
+
+# -------------------------------------------
+def compareAproximado(s,t):
+    sl = s.lower().split(' ')
+    tl = t.lower().split(' ')
+    if len(sl) < len(tl):
+        gl = tl
+        pl = sl
+    else:
+        gl = sl
+        pl = tl
+    #
+    r = sum([max([basicCompareRate(pal,pal2)[0] for pal2 in gl]) for pal in pl]) / len(pl)
+    return r
 
 # -------------------------------------------
 def responseError(st_code, msg_err):

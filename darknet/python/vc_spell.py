@@ -3,6 +3,7 @@
 
 import os
 import re
+import csv
 
 import rapidfuzz.fuzz as fuzz
 from spellchecker import SpellChecker
@@ -15,6 +16,7 @@ SPELL = SpellChecker(language="pt")
 MUNICIPIOS = None
 ORG_EXPED = None
 UFS = None
+CABECALHOS_RG = None
 
 SPECIAL_CITY = {
     'sao paulo sp': ('paulo',),
@@ -148,6 +150,72 @@ def fuzz_ratio(s,t):
     return score, int(round((1 - score/100.0) * (len(s) + len(t))))
     #score, erro = basicCompareRate(s,t)
     #return score * 100.0, erro
+
+def AdjustCabecalhoRG(s):
+    global CABECALHOS_RG
+    r = ' '.join([pal for pal in vc_strings.translate_extchar(s).split(" ") if len(pal) > 0])
+    r = r.lower()
+    teste = []
+    for cabecalho in CABECALHOS_RG:
+        teste_cabecalho = cabecalho.lower()
+        detalhe1 = CABECALHOS_RG[cabecalho][1].lower()
+        detalhe2 = CABECALHOS_RG[cabecalho][2].lower()
+
+        score,erro = fuzz_ratio(r,teste_cabecalho)
+        #scoreDet1 = vc_utils.basicCompareRate(r,detalhe1,2)[0] if detalhe1 else 1.0
+        #scoreDet2 = vc_utils.basicCompareRate(r,detalhe2,2)[0] if detalhe2 else 1.0
+        scoreDet1 = vc_utils.compareAproximado(r,detalhe1) if detalhe1 else 0
+        scoreDet2 = vc_utils.compareAproximado(r,detalhe2) if detalhe2 else 0
+        teste += [(teste_cabecalho,score,erro,scoreDet1,scoreDet2)] # crio uma lista de tuplas de testes, contendo score, erro, score do detalhe1 e score do detalhe2
+
+    teste.sort(key=lambda tupla: tupla[3], reverse=True)
+    tem_maior = False
+    n_corte = 0
+    #msgCorte = []
+    threshold_corte = 0.85
+    for n in range(len(teste)):
+        if teste[n][3] >= 0.95:
+            threshold_corte = 0.95
+        if teste[n][3] >= threshold_corte: 
+            tem_maior = True
+            continue
+        if tem_maior:
+            n_corte = n
+        break
+    if n_corte > 0:
+        #msgCorte += [f"Ao cortar no detalhe1, o número de elementos da lista de teste passa de {len(teste)} para {n_corte}"]
+        teste = teste[:n_corte]
+    
+    teste.sort(key=lambda tupla: tupla[4], reverse=True)
+    tem_maior = False
+    n_corte = 0
+    threshold_corte = 0.85
+    for n in range(len(teste)):
+        if teste[n][4] >= 0.95:
+            threshold_corte = 0.95
+        if teste[n][4] >= threshold_corte:
+            tem_maior = True
+            continue
+        if tem_maior:
+            n_corte = n
+        break
+    if n_corte > 0:
+        #msgCorte += [f"Ao cortar no detalhe2, o número de elementos da lista de teste passa de {len(teste)} para {n_corte}"]
+        teste = teste[:n_corte]
+    teste.sort(key=lambda tupla: tupla[1], reverse=True) # ordenando pelo score, que fica na posição 1 da tupla de teste
+
+    #if len(teste) == 1 and teste[0][1] < 70:
+    #    print("-" * 50)
+    #    print("Lista de testes com um único elemento")
+    #    print('\n'.join(msgCorte))
+    #    print("-" * 50)
+    #    for t in teste[:10]:
+    #        print(f"{t[0][:48]:22}\n -->> Sc: {score:5.2f} | Er: {erro:5d} | D1: {scoreDet1:5.2f} | D2: {scoreDet2:5.2f}")
+
+    if teste[0][1] >= 70 or len(teste) == 1:
+        return teste[0][0].upper()
+    else:
+        return r.upper()
 
 def AdjustCity(s):
     global MUNICIPIOS
@@ -389,12 +457,38 @@ def read_list(arquivo):
         vc_utils.printErr(f"Erro ao ler arquivo \"{arquivo}\"")
     return lista
 
+def simple_read_csv(csvFileName, campo_chave = 0):
+    f = open(csvFileName,'r')
+    linhas = []
+    try:
+        csvRdr = csv.reader(f)
+        linhas = [r for r in csvRdr]
+    finally:
+        f.close()
+    n_campo_chave = campo_chave
+    for n,col in enumerate(linhas[0]):
+        if str(campo_chave).lower() == str(col).lower():
+            n_campo_chave = n
+    if type(n_campo_chave) is not int:
+        n_campo_chave = -1
+    dic = {}
+    for nLinha, linha in enumerate(linhas):
+        if nLinha == 0: continue
+        if n_campo_chave < 0:
+            chave = nLinha
+        else:
+            chave = linha[n_campo_chave]
+        dic[chave] = [linha[n] for n in range(len(linha)) if n != n_campo_chave]
+    return dic
+
 def inicializa_spellchecker(path_prog):
     global MUNICIPIOS
     global ORG_EXPED
     global UFS
+    global CABECALHOS_RG
 
     define_custom_spell_dicitionary(os.path.join(path_prog,'vcd_spell.dic'))
+    CABECALHOS_RG = simple_read_csv(os.path.join(path_prog,'vcd_cabecalhos_rg.csv'), campo_chave = "cabecalho")
     MUNICIPIOS = read_list(os.path.join(path_prog,'vcd_cities.dic'))
     ORG_EXPED = read_list(os.path.join(path_prog,'vcd_org_exped.dic'))
     UFS = read_list(os.path.join(path_prog,'vcd_ufs.dic'))

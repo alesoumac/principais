@@ -195,6 +195,11 @@ class ExtractedField:
         processedImage = self.doPreprocessing()
         ocrText      = self.doOCR(processedImage, self.getDeskewedImage())
         adjustedText = self.doPosprocessing(ocrText)
+
+        linhas = adjustedText.split('\n')
+        linhas = [vc_strings.translate_extchar(linha).upper() for linha in linhas]
+        adjustedText = '\n'.join(linhas)
+
         self.extractedValues = [ocrText, adjustedText]
 
 
@@ -445,3 +450,8 @@ class RgMultilineField(RgField):
     def doSpellChecker(self, texto):
         filtroTitulos = self.getFieldTitlesFilter()
         return vc_spell.SpellAdjust(texto,False,False,False,filtroTitulos)
+
+# ------------------------------ Header Fields
+class RgHeaderField(RgMultilineField):
+    def doSpecialCorrection(self, texto):
+        return vc_spell.AdjustCabecalhoRG(texto)

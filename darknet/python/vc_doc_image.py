@@ -331,7 +331,7 @@ class DocumentImage:
             if obj_name.startswith('nascimento'):      return vc_fields.RgDateField()
             if obj_name.startswith('doc_origem'):      return vc_fields.RgMultilineField()
             if obj_name.startswith('cpf'):             return vc_fields.RgCpfField()
-            if obj_name.startswith('cabecalho'):       return vc_fields.RgMultilineField()
+            if obj_name.startswith('cabecalho'):       return vc_fields.RgHeaderField()
             if obj_name.startswith('rg_verso'):        return vc_fields.RgField()
             if obj_name.startswith('rg_frente'):       return vc_fields.RgField()
             if obj_name.startswith('rg2_verso'):       return vc_fields.RgField()
