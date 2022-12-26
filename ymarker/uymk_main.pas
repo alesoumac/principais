@@ -200,51 +200,98 @@ implementation
 {$R *.lfm}
 
 
+type
+  TDictRectangle = 
+    record
+      objR : integer;
+      x1,y1,x2,y2 : Extended;
+    end;
+  TDictBase =
+    record
+      objB : integer;
+      xcenter,ycenter,width,height : Extended;
+    end;
+
+  TArrayRect = array of TDictRectangle;
+  TArrayBase = array of TDictBase;
+
+function ConvertBaseToRect(base : TArrayBase; doTrim : boolean = False) : TArrayRect;
+var
+  k,i,N : integer;
+  NewRect : TArrayRect;
+begin
+  N := Length(base);
+  SetLength(NewRect, N);
+  i := 0;
+  for k := 0 to N - 1 do
+  begin
+    with base[k],NewRect[i] do
+    begin
+      objR := objB;
+      x1 := xcenter - width / 2;
+      y1 := ycenter - height / 2;
+      x2 := x1 + width;
+      y2 := y1 + height;
+
+      if doTrim
+      then begin
+        if (x1 >= 1) or (y1 >= 1) or (x2 <= 0) or (y2 <= 0)
+        then
+          Continue;
+        if x1 < 0 then x1 := 0;
+        if y1 < 0 then y1 := 0;
+        if x2 > 1 then x2 := 1;
+        if y2 > 1 then y2 := 1;
+      end;
+    end;
+    Inc(i);
+  end;
+  SetLength(NewRect, i);
+  Result := NewRect;
+end;
+
+function ConvertRectToBase(rect : TArrayRect; doTrim : boolean = False) : TArrayBase;
+var
+  k,i,N : integer;
+  NewBase : TArrayBase;
+  xx1,xx2,yy1,yy2 : Extended;
+begin
+  N := Length(rect);
+  SetLength(NewBase, N);
+  i := 0;
+  for k := 0 to N - 1 do
+  begin
+    with rect[k],NewBase[i] do
+    begin
+      xx1 := x1;
+      yy1 := y1;
+      xx2 := x2;
+      yy2 := y2;
+
+      if doTrim
+      then begin
+        if (x1 >= 1) or (y1 >= 1) or (x2 <= 0) or (y2 <= 0)
+        then
+          Continue;
+        if x1 < 0 then xx1 := 0;
+        if y1 < 0 then yy1 := 0;
+        if x2 > 1 then xx2 := 1;
+        if y2 > 1 then yy2 := 1;
+      end;
+
+      objB    := objR;
+      width   := xx2 - xx1;
+      height  := yy2 - yy1;
+      xcenter := (xx2 + xx1) / 2.0;
+      ycenter := (yy2 + yy1) / 2.0;
+    end;
+    Inc(i);
+  end;
+  SetLength(NewBase, i);
+  Result := NewBase;
+end;
 
 (*
-def convertBaseToRect(base, trim = False):
-    dicRects = {}
-    for k in base:
-        x,y,w,h = base[k]
-
-        x1 = x - w/2.0
-        y1 = y - h/2.0
-        x2 = x + w/2.0
-        y2 = y + h/2.0
-
-        if trim:
-            if x1 >= 1 or y1 >= 1 or x2 <= 0 or y2 <= 0:
-                continue
-            if x1 < 0: x1 = 0.0
-            if y1 < 0: y1 = 0.0
-            if x2 > 1: x2 = 1.0
-            if y2 > 1: y2 = 1.0
-
-        dicRects[k] = (x1,y1,x2,y2)
-
-    return dicRects
-
-def convertRectToBase(rect, trim = False):
-    dicBase = {}
-    for k in rect:
-        x1,y1,x2,y2 = rect[k]
-        if trim:
-            if x1 >= 1 or y1 >= 1 or x2 <= 0 or y2 <= 0:
-                continue
-            if x1 < 0: x1 = 0.0
-            if y1 < 0: y1 = 0.0
-            if x2 > 1: x2 = 1.0
-            if y2 > 1: y2 = 1.0
-
-        w = x2 - x1
-        h = y2 - y1
-        x = (x2 + x1) / 2.0
-        y = (y2 + y1) / 2.0
-
-        dicBase[k] = (x,y,w,h)
-
-    return dicBase
-
 def calculeNovaBase(baseInicial,chaveNova,baseCoordNova):
     if chaveNova not in baseInicial:
         return {chaveNova: baseCoordNova}
