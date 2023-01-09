@@ -1,2 +1,4 @@
-s3_endpoint_url,s3_access_key_id,s3_secret_access_key
-"https://storagegw.estaleiro.serpro.gov.br","QDV7PCJX5A4YA6XWEAC2","66H6mKSIxLMLn0F97SeAx9RDXnOXDpQWEN1EmYPR"
+id,s3_endpoint_url,bucket_name,s3_access_key_id,s3_secret_access_key,obs
+"treinocompras","https://storagegw.estaleiro.serpro.gov.br","treinocompras","CMIN54XU6KQSWRJ978DA","eJUCAG1RcxvRMVX43htAkxxjd4oQWhBvkCIAlnMu","Arquivos de treinamento do ComprasNet"
+"artefatos_vcdoc2020","https://storagegw.estaleiro.serpro.gov.br","artefatos","4I9EF5CCQUXMIRFI8V7T","fNpKZaewf2uXy91yTKHrJVy2cEjESCBYVgykLdO1","Copia do ambiente do Raphael"
+"cprnet","https://storagegw.estaleiro.serpro.gov.br","20230105-cprnet","BBFLOJADVNGOSUDSFUGR","LqcK0BqTmv0yw3oJ5NS57zM8C2dvRuiExN41ivfk","Treino do ComprasNet Jan-2023"
