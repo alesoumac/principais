@@ -81,6 +81,17 @@ CAMPOS_ACURACIA = {"cnh": "CNH", "cnh_frente": "CNH Frente",
     "timers": "Timers"
     }
 
+CHAVE_AUTK_DES = os.getenv('VCDOC_CHAVE_SERVICO_AUTENTIKUS_DESENVOLVIMENTO').encode()
+CHAVE_AUTK_PRO = os.getenv('VCDOC_CHAVE_SERVICO_AUTENTIKUS_PRODUCAO').encode()
+# É preciso definir as variáveis de ambiente VCDOC_CHAVE_SERVICO_AUTENTIKUS_DESENVOLVIMENTO e VCDOC_CHAVE_SERVICO_AUTENTIKUS_PRODUCAO.
+# No Linux, editar o arquivo .profile e incluir as linhas abaixo:
+#     export VCDOC_CHAVE_SERVICO_AUTENTIKUS_DESENVOLVIMENTO="chave autentikus de desenvolvimento"
+#     export VCDOC_CHAVE_SERVICO_AUTENTIKUS_PRODUCAO="chave autentikus de produção"
+# No Windows, definir as variáveis de ambiente acima (usuário ou sistema, o que vc preferir) com seus respectivos valores.
+#
+# As chaves autentikus de desenvolvimento e produção são strings formadas por chave de serviço e secret key, separadas pelo caracter ":"
+# Por exemplo: "jrhyd4bi98563jfdjilxn8bxa3:jskcxi9u3oyb5msgniiuxcvm9n"
+
 def tty_color(cor = None):
     '''
     Cores para imprimir no terminal
@@ -280,11 +291,11 @@ def cria_header_autentikus():
 
     if AMBIENTE in "HD":
         # Chave de serviço do ValAutentikus
-        chave_servico = b"uhjflqa60eec7ofhe843o9pcm0:m1sgpug50s9gl2ktg5ccgh5hnr"
+        chave_servico = CHAVE_AUTK_DES
         url_servico = "https://valautentikus.estaleiro.serpro.gov.br/autentikus-authn/api/v1/token"
     else:
         # Chave de serviço do Autentikus (Produção)
-        chave_servico = b"3c3eem214ti7fl512o71cpek11:9vf5h9h4hpi8dafstnkjliqb7d"
+        chave_servico = CHAVE_AUTK_PRO
         url_servico = "https://autentikus.estaleiro.serpro.gov.br/autentikus-authn/api/v1/token"
 
     autorizacao_basic = f"{jwt.utils.base64url_encode(chave_servico).decode()}="

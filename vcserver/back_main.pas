@@ -458,11 +458,11 @@ begin
   if use_val then param_ambiente := 'D' else param_ambiente := 'P';
   //if use_val
   //then begin
-  //  auth_basic := 'dWhqZmxxYTYwZWVjN29maGU4NDNvOXBjbTA6bTFzZ3B1ZzUwczlnbDJrdGc1Y2NnaDVobnI=';
+  //  auth_basic := 'dWh...';
   //  url := 'valautentikus';
   //end
   //else begin
-  //  auth_basic := 'M2MzZWVtMjE0dGk3Zmw1MTJvNzFjcGVrMTE6OXZmNWg5aDRocGk4ZGFmc3Rua2psaXFiN2Q=';
+  //  auth_basic := 'M2M...';
   //  url := 'autentikus';
   //end;
   //comandoCURL := 'curl --request POST'

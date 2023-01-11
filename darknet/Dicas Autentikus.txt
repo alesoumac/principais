@@ -1,20 +1,20 @@
 curl --request POST \
   --url https://desautentikus.estaleiro.serpro.gov.br/autentikus-authn/api/v1/token \
-  --header 'Authorization: Basic dWhqZmxxYTYwZWVjN29maGU4NDNvOXBjbTA6bTFzZ3B1ZzUwczlnbDJrdGc1Y2NnaDVobnI=' \
+  --header 'Authorization: Basic <<<coloque aqui o base64 da autorização>>>' \
   --header 'content-type: application/x-www-form-urlencoded' \
   --data 'grant_type=client_credentials&scope=escopo_vcdoc'
   
 curl --request POST \
   --url https://valautentikus.estaleiro.serpro.gov.br/autentikus-authn/api/v1/token \
-  --header 'Authorization: Basic dWhqZmxxYTYwZWVjN29maGU4NDNvOXBjbTA6bTFzZ3B1ZzUwczlnbDJrdGc1Y2NnaDVobnI=' \
+  --header 'Authorization: Basic <<<coloque aqui o base64 da autorização>>>' \
   --header 'content-type: application/x-www-form-urlencoded' \
   --data 'grant_type=client_credentials&scope=escopo_vcdoc'
 
   
   
 def cria_header_autentikus():
-    chave_servico = b"uhjflqa60eec7ofhe843o9pcm0:m1sgpug50s9gl2ktg5ccgh5hnr"
-    autorizacao_basic = jwt.utils.urlsafe_b64encode(chave_servico).decode()  # autorizacao_basic = "dWhqZmxxYTYwZWVjN29maGU4NDNvOXBjbTA6bTFzZ3B1ZzUwczlnbDJrdGc1Y2NnaDVobnI="
+    chave_servico = b"<<<chave>>>:<<<segredo>>>"
+    autorizacao_basic = jwt.utils.urlsafe_b64encode(chave_servico).decode()  # autorizacao_basic = "<<<base64 da autorização>>>"
     print(f"Autorizacao Basic = {autorizacao_basic}")
 
     while True:
@@ -36,6 +36,6 @@ def cria_header_autentikus():
         # ver aonde fazer um wait(5) pra esperar 5 segundos
 
     bearer = resp_token['access_token']
-    #bearer = "eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiIzMzY4MzExMTAwMDEwNyIsImF1ZCI6Ijk4IiwicGVybWlzc2lvbnMiOlsicG9zdCB2YWxpZGFjYW9fZGVfZG9jdW1lbnRvcyJdLCJzY29wZSI6ImVzY29wb192Y2RvYyIsInJvbGVzIjpbImNsaWVudGUiXSwibmFtZSI6IjExNjc0LXZjZG9jIiwiaXNzIjoidmFsLmF1dGVudGlrdXMuZXN0YWxlaXJvLnNlcnBybyIsImNsaWVudCI6IjIyIiwiY2xpZW50X2lwIjoiMTAuNDMuNC4xMTUiLCJleHAiOjE1OTUyNjUzMTIsInBhcmFtcyI6e30sImlhdCI6MTU5NTI2MTcxMn0.FFzdXxZOI7GJXaotq-DyjVrXJgbgfz3wNrYn3oq1du4u-LQE7V-_l1QqltqJ87tFxObdsjPggI7JTLyggXv86iD7hgcb8ZHlApsI2XUPfeahTXr89aoh8MC5FdcxZyWFeax1HdzbIuw-nwMsSJaXDM5wJNpkb-2w1baw-4yK762PQ7-QTq69ld4nUxqalrtuurdlQoiW5T52VFDc4p4GuNzxuuEHlW52rVi1PCRVpCdacneFpR6fLZqR2Esj1cG5AY9OHK9Apv0Q_-ehByvORBOkgvPNv-WMQ567_MYHwyqAz5tKbmJQEGNEOUCgSgs4fWohdRMWgoQZCUPee2707A"
+    #bearer = "<<<bearer token header>>>.<<<bearer token payload>>>.<<<bearer token data>>>"
     header_dic = {'Authorization': 'Bearer ' + bearer, 'typ': 'JWT', 'alg': 'RS512'}   
     return header_dic

@@ -480,13 +480,13 @@ begin
 
   if Use_ValAutentikus
   then begin
-    auth_basic := 'dWhqZmxxYTYwZWVjN29maGU4NDNvOXBjbTA6bTFzZ3B1ZzUwczlnbDJrdGc1Y2NnaDVobnI=';
+    auth_basic := 'dWh...';
     url := 'valautentikus';
     env_auth := '2';
     param_ambiente := 'D'
   end
   else begin
-    auth_basic := 'M2MzZWVtMjE0dGk3Zmw1MTJvNzFjcGVrMTE6OXZmNWg5aDRocGk4ZGFmc3Rua2psaXFiN2Q=';
+    auth_basic := 'M2M...';
     url := 'autentikus';
     env_auth := '1';
     param_ambiente := 'P'

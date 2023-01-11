@@ -11,10 +11,10 @@ try:
 
     if ambiente in "HD":
         url_inicial = "valautentikus"
-        auth_basic = "dWhqZmxxYTYwZWVjN29maGU4NDNvOXBjbTA6bTFzZ3B1ZzUwczlnbDJrdGc1Y2NnaDVobnI="
+        auth_basic = "dWh..."
     else:
         url_inicial = "autentikus"
-        auth_basic = "M2MzZWVtMjE0dGk3Zmw1MTJvNzFjcGVrMTE6OXZmNWg5aDRocGk4ZGFmc3Rua2psaXFiN2Q="
+        auth_basic = "M2M..."
     auth_str = "Basic {}".format(auth_basic)
     header_autk = {"content-type": "application/x-www-form-urlencoded", "Authorization": auth_str}
     data_autk   = "grant_type=client_credentials&scope=escopo_vcdoc"

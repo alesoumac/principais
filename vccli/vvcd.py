@@ -75,6 +75,17 @@ CAMPOS_ACURACIA = {"cnh": "CNH", "cnh_frente": "CNH Frente",
     "timers": "Timers"
     }
 
+CHAVE_AUTK_DES = os.getenv('VCDOC_CHAVE_SERVICO_AUTENTIKUS_DESENVOLVIMENTO').encode()
+CHAVE_AUTK_PRO = os.getenv('VCDOC_CHAVE_SERVICO_AUTENTIKUS_PRODUCAO').encode()
+# É preciso definir as variáveis de ambiente VCDOC_CHAVE_SERVICO_AUTENTIKUS_DESENVOLVIMENTO e VCDOC_CHAVE_SERVICO_AUTENTIKUS_PRODUCAO.
+# No Linux, editar o arquivo .profile e incluir as linhas abaixo:
+#     export VCDOC_CHAVE_SERVICO_AUTENTIKUS_DESENVOLVIMENTO="chave autentikus de desenvolvimento"
+#     export VCDOC_CHAVE_SERVICO_AUTENTIKUS_PRODUCAO="chave autentikus de produção"
+# No Windows, definir as variáveis de ambiente acima (usuário ou sistema, o que vc preferir) com seus respectivos valores.
+#
+# As chaves autentikus de desenvolvimento e produção são strings formadas por chave de serviço e secret key, separadas pelo caracter ":"
+# Por exemplo: "jrhyd4bi98563jfdjilxn8bxa3:jskcxi9u3oyb5msgniiuxcvm9n"
+
 def tty_color(cor = None):
     '''
     Cores para imprimir no terminal
@@ -274,15 +285,14 @@ def cria_header_autentikus():
 
     if AMBIENTE in "HD":
         # Chave de serviço do ValAutentikus
-        chave_servico = b"uhjflqa60eec7ofhe843o9pcm0:m1sgpug50s9gl2ktg5ccgh5hnr"
+        chave_servico = CHAVE_AUTK_DES
         url_servico = "https://valautentikus.estaleiro.serpro.gov.br/autentikus-authn/api/v1/token"
     else:
         # Chave de serviço do Autentikus (Produção)
-        chave_servico = b"3c3eem214ti7fl512o71cpek11:9vf5h9h4hpi8dafstnkjliqb7d"
+        chave_servico = CHAVE_AUTK_PRO
         url_servico = "https://autentikus.estaleiro.serpro.gov.br/autentikus-authn/api/v1/token"
 
     autorizacao_basic = f"{jwt.utils.base64url_encode(chave_servico).decode()}="
-    # A variável autorizacao_basic tem que ter o valor "dWhqZmxxYTYwZWVjN29maGU4NDNvOXBjbTA6bTFzZ3B1ZzUwczlnbDJrdGc1Y2NnaDVobnI="
     #print(f"Autorizacao Basic = {autorizacao_basic}")
 
     while True:
@@ -313,7 +323,6 @@ def cria_header_autentikus():
     bearer = resp_token['access_token']
 
     HEADER_EXPIRATION = datetime.now() + timedelta(seconds=exp_time)
-    #bearer = "eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiIzMzY4MzExMTAwMDEwNyIsImF1ZCI6Ijk4IiwicGVybWlzc2lvbnMiOlsicG9zdCB2YWxpZGFjYW9fZGVfZG9jdW1lbnRvcyJdLCJzY29wZSI6ImVzY29wb192Y2RvYyIsInJvbGVzIjpbImNsaWVudGUiXSwibmFtZSI6IjExNjc0LXZjZG9jIiwiaXNzIjoidmFsLmF1dGVudGlrdXMuZXN0YWxlaXJvLnNlcnBybyIsImNsaWVudCI6IjIyIiwiY2xpZW50X2lwIjoiMTAuNDMuNC4xMTUiLCJleHAiOjE1OTUyNjUzMTIsInBhcmFtcyI6e30sImlhdCI6MTU5NTI2MTcxMn0.FFzdXxZOI7GJXaotq-DyjVrXJgbgfz3wNrYn3oq1du4u-LQE7V-_l1QqltqJ87tFxObdsjPggI7JTLyggXv86iD7hgcb8ZHlApsI2XUPfeahTXr89aoh8MC5FdcxZyWFeax1HdzbIuw-nwMsSJaXDM5wJNpkb-2w1baw-4yK762PQ7-QTq69ld4nUxqalrtuurdlQoiW5T52VFDc4p4GuNzxuuEHlW52rVi1PCRVpCdacneFpR6fLZqR2Esj1cG5AY9OHK9Apv0Q_-ehByvORBOkgvPNv-WMQ567_MYHwyqAz5tKbmJQEGNEOUCgSgs4fWohdRMWgoQZCUPee2707A"
 
     HEADER_DIC = {'Authorization': 'Bearer ' + bearer, 'typ': 'JWT', 'alg': 'RS512'}
     return HEADER_DIC

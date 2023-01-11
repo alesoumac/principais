@@ -101,12 +101,7 @@ def initialize_public_key_autentikus(jwks_address):
         PUBLIC_KEY_CACHE = ""
         return
     
-    # para usar chave pública fixa, descomentar as 2 linhas abaixo
-    #PUBLIC_KEY_CACHE = '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvu4V+C+1qlaCAKlfZb60JM5emAsplhsJQ69RpwpLlsTo4hHI0n4HJWWSKiXTmxjbkS8lOt1CfYwm10uMpWf5syUBqmzDZi9iwjGbOG1E41cKlhX3dNkKinKlYZthhyfe9LMxRJ5TllrCCPx2uED6XLJXl4aMnFKTre09EcHjj0nWvYiFhe/lHCjWWmDNDzCxHqLjfmkMfvKgkIkV/1mK5V0JG5QPqjQsgaMc0LbhJZEGIHQV+TWMgVb9Xsb8VBp5DeOBgMKlSABL3x14tP3/5AyjiILjJTQeR4Q2oAaERVJ5SiItVjaaMuSPDl6PwYzriLBLGSKBMcLrugsq0xFhQQIDAQAB\n-----END PUBLIC KEY-----'.encode()
-    #return
-    
     # pegar a chave pública do Autentikus
-
     JWKS_ADDRESS = jwks_address
 
     try:
